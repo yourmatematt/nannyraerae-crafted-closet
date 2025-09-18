@@ -2,41 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Definition of the design system for Handmade by Nanny Rae Rae's
+Inspired by Kite Clothing and Hanna Andersson - Clean, modern, premium children's clothing aesthetic
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Base colors */
+    --background: 43 50% 98%; /* Warm White (#FAF9F6) */
+    --foreground: 210 84% 15%; /* Rich Navy for text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 43 50% 98%;
+    --card-foreground: 210 84% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 43 50% 98%;
+    --popover-foreground: 210 84% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Brand Primary - Deep Teal */
+    --primary: 168 85% 24%; /* Deep Teal (#0F766E) */
+    --primary-foreground: 43 50% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Brand Secondary - Warm Terracotta */
+    --secondary: 18 68% 55%; /* Warm Terracotta (#DC6B3F) */
+    --secondary-foreground: 43 50% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted colors */
+    --muted: 60 5% 96%; /* Light Gray (#F3F4F6) */
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Soft Sage Green */
+    --accent: 88 20% 65%; /* Soft Sage Green (#9CA986) */
+    --accent-foreground: 210 84% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 43 50% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders and inputs */
+    --border: 25 10% 89%; /* Natural Linen (#E7E5E4) */
+    --input: 25 10% 89%;
+    --ring: 168 85% 24%;
 
-    --radius: 0.5rem;
+    /* Brand color palette */
+    --brand-burgundy: 0 65% 25%; /* Rich Burgundy (#7F1D1D) */
+    --brand-navy: 210 84% 15%; /* Classic Navy (#1E3A5F) */
+    --brand-coral: 7 91% 69%; /* Coral (#FF6B6B) */
+    --brand-mustard: 45 93% 47%; /* Mustard Yellow (#F59E0B) */
+    --brand-lavender: 270 91% 75%; /* Lavender (#C084FC) */
+    --brand-sky: 199 89% 62%; /* Sky Blue (#38BDF8) */
+    --brand-pink: 351 83% 81%; /* Soft Pink (#FDA4AF) */
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-coral)));
+    --gradient-warm: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--brand-mustard)));
+    --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+
+    /* Shadows */
+    --shadow-soft: 0 4px 6px -1px hsl(168 85% 24% / 0.1);
+    --shadow-medium: 0 10px 15px -3px hsl(168 85% 24% / 0.1);
+    --shadow-large: 0 25px 50px -12px hsl(168 85% 24% / 0.15);
+
+    /* Border radius */
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 

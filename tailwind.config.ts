@@ -47,6 +47,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Brand color palette
+        brand: {
+          burgundy: "hsl(var(--brand-burgundy))",
+          navy: "hsl(var(--brand-navy))",
+          coral: "hsl(var(--brand-coral))",
+          mustard: "hsl(var(--brand-mustard))",
+          lavender: "hsl(var(--brand-lavender))",
+          sky: "hsl(var(--brand-sky))",
+          pink: "hsl(var(--brand-pink))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -57,6 +67,20 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      fontFamily: {
+        'playfair': ['Playfair Display', 'serif'],
+        'inter': ['Inter', 'sans-serif'],
+      },
+      backgroundImage: {
+        'gradient-hero': 'var(--gradient-hero)',
+        'gradient-warm': 'var(--gradient-warm)',
+        'gradient-soft': 'var(--gradient-soft)',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow-soft)',
+        'medium': 'var(--shadow-medium)',
+        'large': 'var(--shadow-large)',
       },
       borderRadius: {
         lg: "var(--radius)",
