@@ -1,0 +1,223 @@
+import { useParams } from "react-router-dom";
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+
+const ShopByAge = () => {
+  const { ageGroup } = useParams();
+  
+  const ageData = {
+    "0-3m": {
+      title: "Newborn (0-3 months)",
+      description: "Perfectly sized for your precious little one",
+      hero: "Soft, gentle fabrics for baby's delicate skin",
+      advice: "Easy-dress designs with snap closures for quick diaper changes"
+    },
+    "3-12m": {
+      title: "Baby (3-12 months)",
+      description: "Growing and exploring in comfort",
+      hero: "Durable designs for active babies",
+      advice: "Stretchy fabrics that move with your baby's development"
+    },
+    "1-3y": {
+      title: "Toddler (1-3 years)",
+      description: "Perfect for little adventurers",
+      hero: "Easy-dress designs for active toddlers",
+      advice: "Independent dressing features with simple closures"
+    },
+    "3-5y": {
+      title: "Preschool (3-5 years)",
+      description: "Ready for school and play",
+      hero: "Comfortable styles for all-day wear",
+      advice: "Machine washable designs that handle playground adventures"
+    },
+    "5-10y": {
+      title: "School Age (5-10 years)",
+      description: "Stylish pieces for confident kids",
+      hero: "Fashion-forward designs kids love to wear",
+      advice: "Age-appropriate styles with quality that lasts"
+    }
+  };
+
+  const currentAge = ageData[ageGroup as keyof typeof ageData] || ageData["1-3y"];
+
+  const products = [
+    {
+      id: 1,
+      name: "Garden Party Dress",
+      price: 89,
+      image: "/src/assets/product-dress.jpg",
+      popular: true,
+      sizes: ["12m", "18m", "2T"]
+    },
+    {
+      id: 2,
+      name: "Coastal Dreams Romper",
+      price: 65,
+      image: "/src/assets/product-romper.jpg",
+      popular: false,
+      sizes: ["12m", "18m"]
+    },
+    {
+      id: 3,
+      name: "Modern Vintage Pants",
+      price: 75,
+      image: "/src/assets/product-pants.jpg",
+      popular: true,
+      sizes: ["18m", "2T", "3T"]
+    }
+  ];
+
+  const categories = [
+    { name: "Everyday Essentials", count: 24, image: "/src/assets/product-dress.jpg" },
+    { name: "Special Occasion", count: 12, image: "/src/assets/product-romper.jpg" },
+    { name: "Seasonal Favorites", count: 18, image: "/src/assets/product-pants.jpg" },
+    { name: "Complete Outfits", count: 8, image: "/src/assets/product-dress.jpg" }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      {/* Age-Specific Hero */}
+      <section className="bg-gradient-hero py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white">
+            <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6">
+              {currentAge.title}
+            </h1>
+            <p className="font-inter text-xl mb-4 opacity-90">
+              {currentAge.description}
+            </p>
+            <p className="font-inter text-lg opacity-80">
+              {currentAge.hero}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Category Links */}
+      <section className="py-12 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category) => (
+              <div key={category.name} className="group cursor-pointer bg-card rounded-xl overflow-hidden shadow-soft hover:shadow-medium transition-all duration-200">
+                <div className="aspect-[4/3] bg-muted">
+                  <img 
+                    src={category.image} 
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="font-inter font-semibold text-foreground mb-2">{category.name}</h3>
+                  <p className="font-inter text-sm text-muted-foreground mb-4">{category.count} items</p>
+                  <Button variant="outline" size="sm" className="w-full">Shop Now</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Helpful Content Block */}
+      <section className="py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-card rounded-2xl p-8 shadow-soft">
+            <h2 className="font-playfair text-2xl font-bold text-center text-foreground mb-6">
+              Shopping for a {currentAge.title.split(' ')[0]}?
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-inter font-semibold text-foreground mb-3">Size Guide</h3>
+                <p className="font-inter text-muted-foreground mb-4">
+                  Our {currentAge.title.toLowerCase()} pieces are designed for comfort and growth.
+                </p>
+                <Button variant="outline" size="sm">View Size Chart</Button>
+              </div>
+              <div>
+                <h3 className="font-inter font-semibold text-foreground mb-3">Perfect For This Age</h3>
+                <p className="font-inter text-muted-foreground">
+                  {currentAge.advice}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Products */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
+            Popular for This Age
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map((product) => (
+              <div key={product.id} className="group cursor-pointer bg-card rounded-xl p-4 shadow-soft hover:shadow-medium transition-all duration-200">
+                <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden mb-4">
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {product.popular && (
+                    <Badge className="absolute top-3 left-3 bg-brand-coral text-white font-semibold">
+                      Popular
+                    </Badge>
+                  )}
+                </div>
+                <h3 className="font-inter font-semibold text-foreground mb-2">{product.name}</h3>
+                <p className="font-inter text-sm text-muted-foreground mb-2">
+                  Available in: {product.sizes.join(", ")}
+                </p>
+                <p className="font-inter text-xl font-bold text-primary mb-3">${product.price}</p>
+                <Button className="w-full" size="sm">Add to Cart</Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Builder */}
+      <section className="py-16 bg-gradient-soft">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-playfair text-3xl font-bold text-white mb-6">
+            Why Nanny Rae Rae Understands {currentAge.title.split(' ')[0]}s
+          </h2>
+          <p className="font-inter text-lg text-white/90 mb-8">
+            With years of experience making clothes for my own grandchildren, I understand exactly what works for this age group. Every design is tested by real kids in real situations.
+          </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">👶</span>
+              </div>
+              <h3 className="font-inter font-semibold text-white mb-2">Age-Appropriate</h3>
+              <p className="font-inter text-sm text-white/80">Designed specifically for this developmental stage</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">✋</span>
+              </div>
+              <h3 className="font-inter font-semibold text-white mb-2">Safety First</h3>
+              <p className="font-inter text-sm text-white/80">All closures and details meet safety standards</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+                <span className="text-2xl">❤️</span>
+              </div>
+              <h3 className="font-inter font-semibold text-white mb-2">Comfort Guaranteed</h3>
+              <p className="font-inter text-sm text-white/80">Soft, breathable fabrics that feel amazing</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default ShopByAge;
