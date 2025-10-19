@@ -1,11 +1,29 @@
 import { useParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import productDress from "@/assets/product-dress.jpg";
+import productRomper from "@/assets/product-romper.jpg";
+import productPants from "@/assets/product-pants.jpg";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image_url?: string;
+  collection?: string;
+  colors?: string[];
+}
 
 const CollectionDetail = () => {
   const { collectionName } = useParams();
+  const { addToCart } = useCart();
   
   const collectionData = {
     "garden-party": {
@@ -26,29 +44,75 @@ const CollectionDetail = () => {
 
   const currentCollection = collectionData[collectionName as keyof typeof collectionData] || collectionData["garden-party"];
 
-  const products = [
-    {
-      id: 1,
-      name: "Blooming Dress",
-      price: 89,
-      image: "/src/assets/product-dress.jpg",
-      colors: ["Pink", "Blue", "Green"]
-    },
-    {
-      id: 2,
-      name: "Petal Romper",
-      price: 65,
-      image: "/src/assets/product-romper.jpg",
-      colors: ["White", "Yellow"]
-    },
-    {
-      id: 3,
-      name: "Garden Pants",
-      price: 75,
-      image: "/src/assets/product-pants.jpg",
-      colors: ["Green", "Pink"]
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['collectionProducts', collectionName],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('collection', collectionName)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching collection products:', error);
+        // Fallback to showing all products
+        const { data: allProducts, error: allError } = await supabase
+          .from('products')
+          .select('*')
+          .limit(6)
+          .order('created_at', { ascending: false });
+
+        if (allError) {
+          return [
+            {
+              id: 1,
+              name: "Blooming Dress",
+              price: 89,
+              image_url: null,
+              collection: collectionName,
+              colors: ["Pink", "Blue", "Green"]
+            },
+            {
+              id: 2,
+              name: "Petal Romper",
+              price: 65,
+              image_url: null,
+              collection: collectionName,
+              colors: ["White", "Yellow"]
+            },
+            {
+              id: 3,
+              name: "Garden Pants",
+              price: 75,
+              image_url: null,
+              collection: collectionName,
+              colors: ["Green", "Pink"]
+            }
+          ];
+        }
+
+        return allProducts as Product[];
+      }
+
+      return data as Product[];
     }
-  ];
+  });
+
+  const getProductImage = (product: Product) => {
+    if (product.image_url) return product.image_url;
+    const images = [productDress, productRomper, productPants];
+    return images[product.id % images.length];
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      productId: product.id.toString(),
+      name: product.name,
+      price: product.price,
+      imageUrl: getProductImage(product),
+    });
+    toast.success(`${product.name} added to cart!`);
+  };
 
   const stylingTips = [
     {
@@ -66,7 +130,7 @@ const CollectionDetail = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Hero Section */}
@@ -134,28 +198,16 @@ const CollectionDetail = () => {
           <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
             Collection Pieces
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="group cursor-pointer bg-card rounded-xl p-4 shadow-soft hover:shadow-medium transition-all duration-200">
-                <div className="aspect-[3/4] bg-muted rounded-lg overflow-hidden mb-4">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h3 className="font-inter font-semibold text-foreground mb-2">{product.name}</h3>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="font-inter text-sm text-muted-foreground">Available in:</span>
-                  {product.colors.map((color, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
-                <p className="font-inter text-xl font-bold text-primary mb-3">${product.price}</p>
-                <Button className="w-full" size="sm">Add to Cart</Button>
-              </div>
+              <ProductCard
+                key={product.id}
+                product={{
+                  ...product,
+                  description: `Available in: ${product.colors?.join(", ") || "Multiple colors"}`,
+                  image_url: getProductImage(product)
+                }}
+              />
             ))}
           </div>
         </div>

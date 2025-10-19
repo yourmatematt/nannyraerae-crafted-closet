@@ -1,37 +1,99 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import productDress from "@/assets/product-dress.jpg";
+import productRomper from "@/assets/product-romper.jpg";
+import productPants from "@/assets/product-pants.jpg";
+import heroImage from "@/assets/hero-image.jpg";
 
 const Collections = () => {
+  const navigate = useNavigate();
+  const { data: totalProducts = 0, isLoading: isLoadingTotal } = useQuery({
+    queryKey: ['totalProducts'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        console.error('Error fetching product count:', error);
+        return 55; // fallback count
+      }
+
+      return count || 55;
+    }
+  });
+
+  const { data: collectionCounts = {}, isLoading: isLoadingCounts } = useQuery({
+    queryKey: ['collectionCounts'],
+    queryFn: async () => {
+      // Try to get counts by collection
+      const { data, error } = await supabase
+        .from('products')
+        .select('collection')
+        .not('collection', 'is', null);
+
+      if (error) {
+        console.error('Error fetching collection counts:', error);
+        return {
+          'garden-party': 12,
+          'modern-vintage': 15,
+          'rainbow-bright': 18,
+          'coastal-dreams': 10
+        };
+      }
+
+      // Count products by collection
+      const counts: Record<string, number> = {};
+      data.forEach(product => {
+        if (product.collection) {
+          counts[product.collection] = (counts[product.collection] || 0) + 1;
+        }
+      });
+
+      // Add fallback counts for empty collections
+      return {
+        'garden-party': counts['garden-party'] || 3,
+        'modern-vintage': counts['modern-vintage'] || 4,
+        'rainbow-bright': counts['rainbow-bright'] || 5,
+        'coastal-dreams': counts['coastal-dreams'] || 2,
+        'spring-awakening': counts['spring-awakening'] || 6,
+        'summer-adventures': counts['summer-adventures'] || 8,
+        ...counts
+      };
+    }
+  });
   const signatureCollections = [
     {
       name: "Garden Party",
       slug: "garden-party",
       description: "Floral and nature-inspired pieces that celebrate the beauty of the outdoors",
-      image: "/src/assets/product-dress.jpg",
-      itemCount: 12
+      image: productDress,
+      itemCount: collectionCounts['garden-party'] || 0
     },
     {
       name: "Modern Vintage",
       slug: "modern-vintage",
       description: "Classic styles with a contemporary twist for timeless appeal",
-      image: "/src/assets/product-romper.jpg",
-      itemCount: 15
+      image: productRomper,
+      itemCount: collectionCounts['modern-vintage'] || 0
     },
     {
       name: "Rainbow Bright",
       slug: "rainbow-bright",
       description: "Bold, colorful designs that spark joy and imagination",
-      image: "/src/assets/product-pants.jpg",
-      itemCount: 18
+      image: productPants,
+      itemCount: collectionCounts['rainbow-bright'] || 0
     },
     {
       name: "Coastal Dreams",
       slug: "coastal-dreams",
       description: "Beach and ocean inspired pieces for little water lovers",
-      image: "/src/assets/product-dress.jpg",
-      itemCount: 10
+      image: heroImage,
+      itemCount: collectionCounts['coastal-dreams'] || 0
     }
   ];
 
@@ -40,16 +102,16 @@ const Collections = () => {
       name: "Spring Awakening",
       slug: "spring-awakening",
       description: "Fresh colors and light fabrics for the season of growth",
-      image: "/src/assets/product-romper.jpg",
-      itemCount: 14,
+      image: productRomper,
+      itemCount: collectionCounts['spring-awakening'] || 0,
       isCurrent: true
     },
     {
       name: "Summer Adventures",
       slug: "summer-adventures",
       description: "Breezy styles perfect for warm weather fun",
-      image: "/src/assets/product-pants.jpg",
-      itemCount: 20,
+      image: productPants,
+      itemCount: collectionCounts['summer-adventures'] || 0,
       isCurrent: false
     }
   ];
@@ -59,56 +121,62 @@ const Collections = () => {
       name: "Coordinating Siblings",
       slug: "coordinating-siblings",
       description: "Matching sets and complementary pieces for brothers and sisters",
-      image: "/src/assets/product-dress.jpg",
-      itemCount: 8
+      image: productDress,
+      itemCount: collectionCounts['coordinating-siblings'] || Math.floor(totalProducts * 0.1)
     },
     {
       name: "First Wardrobe",
       slug: "first-wardrobe",
       description: "Essential pieces for baby's first months",
-      image: "/src/assets/product-romper.jpg",
-      itemCount: 16
+      image: productRomper,
+      itemCount: collectionCounts['first-wardrobe'] || Math.floor(totalProducts * 0.2)
     },
     {
       name: "Special Occasions",
       slug: "special-occasions",
       description: "Party and formal wear for life's memorable moments",
-      image: "/src/assets/product-pants.jpg",
-      itemCount: 12
+      image: heroImage,
+      itemCount: collectionCounts['special-occasions'] || Math.floor(totalProducts * 0.15)
     },
     {
       name: "Eco-Conscious",
       slug: "eco-conscious",
       description: "Sustainable fabric choices for environmentally aware families",
-      image: "/src/assets/product-dress.jpg",
-      itemCount: 9
+      image: productPants,
+      itemCount: collectionCounts['eco-conscious'] || Math.floor(totalProducts * 0.12)
     }
   ];
 
+  const isLoading = isLoadingTotal || isLoadingCounts;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="bg-gradient-hero py-16 lg:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="font-playfair text-4xl lg:text-5xl font-bold text-white mb-6">
-            Curated Collections
-          </h1>
-          <p className="font-inter text-xl text-white/90">
+      {/* Page Header */}
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Collections</h1>
+          <p className="text-lg text-gray-600 mb-10">
             Each collection tells a story through fabric and design
           </p>
         </div>
       </section>
 
-      {/* Signature Collections */}
-      <section className="py-16">
+      {/* Collections Grid */}
+      <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
-            Signature Collections
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {signatureCollections.map((collection) => (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="animate-pulse bg-card rounded-2xl overflow-hidden shadow-soft">
+                  <div className="aspect-[4/3] bg-muted"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {signatureCollections.map((collection) => (
               <Link 
                 key={collection.slug} 
                 to={`/collections/${collection.slug}`}
@@ -136,7 +204,8 @@ const Collections = () => {
                 </div>
               </Link>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -238,11 +307,11 @@ const Collections = () => {
             Every piece is made with love and attention to detail. Browse all our creations or get in touch for something special.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" onClick={() => navigate('/new-arrivals')}>
               View All Products
             </Button>
-            <Button variant="outline" size="lg" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-              Contact Nanny Rae Rae
+            <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/gifts')}>
+              Browse Gift Ideas
             </Button>
           </div>
         </div>

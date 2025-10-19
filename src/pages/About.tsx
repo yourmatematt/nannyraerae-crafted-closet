@@ -1,8 +1,10 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const About = () => {
+  const navigate = useNavigate();
   const values = [
     {
       icon: "⭐",
@@ -69,7 +71,7 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Hero Section */}
@@ -101,7 +103,7 @@ const About = () => {
               <p className="font-inter text-lg text-muted-foreground mb-6 leading-relaxed">
                 Welcome to my world of handmade children's fashion. Every piece that leaves my sewing room carries with it the love, care, and expertise I've developed over decades of creating beautiful clothes for the little ones I cherish most.
               </p>
-              <Button size="lg" className="font-inter font-semibold">
+              <Button size="lg" className="font-inter font-semibold" onClick={() => navigate('/new-arrivals')}>
                 Shop My Creations
               </Button>
             </div>
@@ -311,10 +313,10 @@ const About = () => {
             Discover beautiful, handmade pieces that will become treasured parts of your child's wardrobe
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="secondary" size="lg">
+            <Button variant="secondary" size="lg" onClick={() => navigate('/new-arrivals')}>
               Shop New Arrivals
             </Button>
-            <Button variant="outline" size="lg" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/collections')}>
               View Collections
             </Button>
           </div>

@@ -1,17 +1,13 @@
+/* 👇 These MUST come first */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system for Handmade by Nanny Rae Rae's
-Inspired by Kite Clothing and Hanna Andersson - Clean, modern, premium children's clothing aesthetic
-All colors MUST be HSL.
-*/
-
+/* Design tokens (HSL) */
 @layer base {
   :root {
-    /* Base colors */
-    --background: 43 50% 98%; /* Warm White (#FAF9F6) */
-    --foreground: 210 84% 15%; /* Rich Navy for text */
+    --background: 43 50% 98%;
+    --foreground: 210 84% 15%;
 
     --card: 43 50% 98%;
     --card-foreground: 210 84% 15%;
@@ -19,98 +15,79 @@ All colors MUST be HSL.
     --popover: 43 50% 98%;
     --popover-foreground: 210 84% 15%;
 
-    /* Brand Primary - Deep Teal */
-    --primary: 168 85% 24%; /* Deep Teal (#0F766E) */
+    /* ✅ Primary — Sage */
+    --primary: 130 14% 49%;            /* #6B8F71 */
     --primary-foreground: 43 50% 98%;
 
-    /* Brand Secondary - Warm Terracotta */
-    --secondary: 18 68% 55%; /* Warm Terracotta (#DC6B3F) */
+    /* ✅ Secondary — Natural Purple */
+    --secondary: 278 15% 42%;          /* #6E5A7A */
     --secondary-foreground: 43 50% 98%;
 
-    /* Muted colors */
-    --muted: 60 5% 96%; /* Light Gray (#F3F4F6) */
+    --muted: 60 5% 96%;
     --muted-foreground: 215 16% 47%;
 
-    /* Accent - Soft Sage Green */
-    --accent: 88 20% 65%; /* Soft Sage Green (#9CA986) */
+    --accent: 88 20% 65%;
     --accent-foreground: 210 84% 15%;
 
-    /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 43 50% 98%;
 
-    /* Borders and inputs */
-    --border: 25 10% 89%; /* Natural Linen (#E7E5E4) */
-    --input: 25 10% 89%;
-    --ring: 168 85% 24%;
+    /* ✅ Sage-tinted borders/inputs and ring */
+    --border: 145 15% 74%;             /* #B4C7BC */
+    --input: 145 15% 74%;
+    --ring: 130 14% 49%;
 
-    /* Brand color palette */
-    --brand-burgundy: 0 65% 25%; /* Rich Burgundy (#7F1D1D) */
-    --brand-navy: 210 84% 15%; /* Classic Navy (#1E3A5F) */
-    --brand-coral: 7 91% 69%; /* Coral (#FF6B6B) */
-    --brand-mustard: 45 93% 47%; /* Mustard Yellow (#F59E0B) */
-    --brand-lavender: 270 91% 75%; /* Lavender (#C084FC) */
-    --brand-sky: 199 89% 62%; /* Sky Blue (#38BDF8) */
-    --brand-pink: 351 83% 81%; /* Soft Pink (#FDA4AF) */
+    /* Brand palette (optional) */
+    --brand-burgundy: 0 65% 25%;
+    --brand-navy: 210 84% 15%;
+    --brand-coral: 7 91% 69%;
+    --brand-mustard: 45 93% 47%;
+    --brand-lavender: 270 35% 92%;     /* softer lavender bg */
+    --brand-sky: 199 89% 62%;
+    --brand-pink: 351 83% 81%;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--brand-coral)));
+    /* Gradients & shadows updated to sage/purple */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
     --gradient-warm: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--brand-mustard)));
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
 
-    /* Shadows */
-    --shadow-soft: 0 4px 6px -1px hsl(168 85% 24% / 0.1);
-    --shadow-medium: 0 10px 15px -3px hsl(168 85% 24% / 0.1);
-    --shadow-large: 0 25px 50px -12px hsl(168 85% 24% / 0.15);
+    --shadow-soft: 0 4px 6px -1px hsl(130 14% 49% / 0.10);
+    --shadow-medium: 0 10px 15px -3px hsl(130 14% 49% / 0.10);
+    --shadow-large: 0 25px 50px -12px hsl(130 14% 49% / 0.15);
 
-    /* Border radius */
     --radius: 0.75rem;
 
+    /* Sidebar (unchanged) */
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 130 14% 49%; /* keep sage focus in dark */
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -122,12 +99,8 @@ All colors MUST be HSL.
   }
 }
 
+/* Base applies */
 @layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
 }

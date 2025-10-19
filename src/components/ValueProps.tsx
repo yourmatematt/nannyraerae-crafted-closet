@@ -10,17 +10,17 @@ const ValueProps = () => {
     {
       icon: Sparkles,
       title: "Exclusive Designs",
-      description: "Unique patterns you won't find anywhere else",
+      description: "Unique colour ways you won't find anywhere else",
     },
     {
       icon: Award,
       title: "Premium Quality",
-      description: "Only the finest organic fabrics and materials",
+      description: "Only the finest quality fabrics and materials",
     },
     {
       icon: MapPin,
       title: "Australian Made",
-      description: "Proudly crafted in Australia with local materials",
+      description: "Proudly hand crafted in Australia",
     },
   ];
 

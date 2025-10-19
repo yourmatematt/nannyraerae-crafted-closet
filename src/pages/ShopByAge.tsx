@@ -1,11 +1,31 @@
 import { useParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import productDress from "@/assets/product-dress.jpg";
+import productRomper from "@/assets/product-romper.jpg";
+import productPants from "@/assets/product-pants.jpg";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image_url?: string;
+  age_group?: string;
+  sizes?: string[];
+  badge?: string;
+  is_popular?: boolean;
+}
 
 const ShopByAge = () => {
   const { ageGroup } = useParams();
+  const { addToCart } = useCart();
   
   const ageData = {
     "0-3m": {
@@ -42,32 +62,67 @@ const ShopByAge = () => {
 
   const currentAge = ageData[ageGroup as keyof typeof ageData] || ageData["1-3y"];
 
-  const products = [
-    {
-      id: 1,
-      name: "Garden Party Dress",
-      price: 89,
-      image: "/src/assets/product-dress.jpg",
-      popular: true,
-      sizes: ["12m", "18m", "2T"]
-    },
-    {
-      id: 2,
-      name: "Coastal Dreams Romper",
-      price: 65,
-      image: "/src/assets/product-romper.jpg",
-      popular: false,
-      sizes: ["12m", "18m"]
-    },
-    {
-      id: 3,
-      name: "Modern Vintage Pants",
-      price: 75,
-      image: "/src/assets/product-pants.jpg",
-      popular: true,
-      sizes: ["18m", "2T", "3T"]
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['productsByAge', ageGroup],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('age_group', ageGroup)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching products by age:', error);
+        return [
+          {
+            id: 1,
+            name: "Garden Party Dress",
+            price: 89,
+            image_url: null,
+            age_group: ageGroup,
+            sizes: ["12m", "18m", "2T"],
+            is_popular: true
+          },
+          {
+            id: 2,
+            name: "Coastal Dreams Romper",
+            price: 65,
+            image_url: null,
+            age_group: ageGroup,
+            sizes: ["12m", "18m"],
+            is_popular: false
+          },
+          {
+            id: 3,
+            name: "Modern Vintage Pants",
+            price: 75,
+            image_url: null,
+            age_group: ageGroup,
+            sizes: ["18m", "2T", "3T"],
+            is_popular: true
+          }
+        ];
+      }
+
+      return data as Product[];
     }
-  ];
+  });
+
+  const getProductImage = (product: Product) => {
+    if (product.image_url) return product.image_url;
+    const images = [productDress, productRomper, productPants];
+    return images[product.id % images.length];
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      productId: product.id.toString(),
+      name: product.name,
+      price: product.price,
+      imageUrl: getProductImage(product),
+    });
+    toast.success(`${product.name} added to cart!`);
+  };
 
   const categories = [
     { name: "Everyday Essentials", count: 24, image: "/src/assets/product-dress.jpg" },
@@ -77,7 +132,7 @@ const ShopByAge = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
       
       {/* Age-Specific Hero */}
@@ -153,30 +208,38 @@ const ShopByAge = () => {
           <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
             Popular for This Age
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <div key={product.id} className="group cursor-pointer bg-card rounded-xl p-4 shadow-soft hover:shadow-medium transition-all duration-200">
-                <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden mb-4">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {product.popular && (
-                    <Badge className="absolute top-3 left-3 bg-brand-coral text-white font-semibold">
-                      Popular
-                    </Badge>
-                  )}
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse bg-card rounded-xl p-4 shadow-soft">
+                  <div className="aspect-[3/4] bg-muted rounded-lg mb-4"></div>
+                  <div className="h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-4 bg-muted rounded mb-2 w-24"></div>
+                  <div className="h-6 bg-muted rounded mb-3 w-20"></div>
+                  <div className="h-8 bg-muted rounded"></div>
                 </div>
-                <h3 className="font-inter font-semibold text-foreground mb-2">{product.name}</h3>
-                <p className="font-inter text-sm text-muted-foreground mb-2">
-                  Available in: {product.sizes.join(", ")}
-                </p>
-                <p className="font-inter text-xl font-bold text-primary mb-3">${product.price}</p>
-                <Button className="w-full" size="sm">Add to Cart</Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-12">
+              <h3 className="font-playfair text-2xl text-muted-foreground mb-4">No products yet for this age group</h3>
+              <p className="font-inter text-muted-foreground mb-6">Check back soon for new arrivals!</p>
+              <Button variant="outline" onClick={() => window.location.href = '/new-arrivals'}>View All New Arrivals</Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    ...product,
+                    badge: product.is_popular ? "Popular" : undefined,
+                    description: `Available in: ${product.sizes?.join(", ") || "Various sizes"}`
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
