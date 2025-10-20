@@ -4,6 +4,19 @@ import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 
+// TypeScript declarations for Tawk.to API
+declare global {
+  interface Window {
+    Tawk_API?: {
+      maximize: () => void;
+      minimize: () => void;
+      showWidget: () => void;
+      hideWidget: () => void;
+      addEvent?: (event: string, data?: any) => void;
+    };
+  }
+}
+
 const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,6 +30,31 @@ const Footer = () => {
     e.preventDefault();
     console.log("Newsletter signup:", email);
     setEmail("");
+  };
+
+  // Handle support link clicks to open Tawk.to chat widget
+  const handleSupportClick = (topic: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    // Check if Tawk.to is loaded
+    if (window.Tawk_API && window.Tawk_API.maximize) {
+      // Open the chat widget
+      window.Tawk_API.maximize();
+
+      // Optional: Add event to track what support topic was clicked
+      setTimeout(() => {
+        if (window.Tawk_API && window.Tawk_API.addEvent) {
+          window.Tawk_API.addEvent('support_topic_clicked', {
+            topic: topic,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }, 500);
+    } else {
+      // Fallback if Tawk.to not loaded
+      console.warn('Tawk.to widget not loaded yet');
+      alert('Chat widget is loading, please try again in a moment.');
+    }
   };
 
   return (
@@ -142,12 +180,12 @@ const Footer = () => {
             <div>
               <h4 className="font-playfair text-lg font-semibold mb-4">Support</h4>
               <ul className="space-y-3 font-inter text-white/80">
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">Size Guide</button></li>
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">Care Instructions</button></li>
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">Shipping & Returns</button></li>
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">FAQs</button></li>
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">Contact Us</button></li>
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">Quality Guarantee</button></li>
+                <li><button onClick={handleSupportClick('Size Guide')} className="hover:text-white transition-colors text-left bg-transparent border-none p-0 font-inter cursor-pointer">Size Guide</button></li>
+                <li><button onClick={handleSupportClick('Care Instructions')} className="hover:text-white transition-colors text-left bg-transparent border-none p-0 font-inter cursor-pointer">Care Instructions</button></li>
+                <li><button onClick={handleSupportClick('Shipping & Returns')} className="hover:text-white transition-colors text-left bg-transparent border-none p-0 font-inter cursor-pointer">Shipping & Returns</button></li>
+                <li><button onClick={handleSupportClick('FAQs')} className="hover:text-white transition-colors text-left bg-transparent border-none p-0 font-inter cursor-pointer">FAQs</button></li>
+                <li><button onClick={handleSupportClick('Contact Us')} className="hover:text-white transition-colors text-left bg-transparent border-none p-0 font-inter cursor-pointer">Contact Us</button></li>
+                <li><button onClick={handleSupportClick('Quality Guarantee')} className="hover:text-white transition-colors text-left bg-transparent border-none p-0 font-inter cursor-pointer">Quality Guarantee</button></li>
               </ul>
             </div>
 
