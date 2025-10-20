@@ -14,6 +14,7 @@ import type { ProductWithImages, Category } from '../../types'
 interface Filters {
   category?: string
   ageGroup?: string
+  gender?: string
   priceRange?: string
   colors?: string[]
   size?: string
@@ -35,7 +36,8 @@ export function ProductListing() {
   })
 
   // Available filter options
-  const ageGroups = ['0-3m', '3-12m', '1-3y', '3-5y', '5-10y']
+  const ageGroups = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs']
+  const genders = ['Boys', 'Girls', 'Gender Neutral']
   const priceRanges = [
     { label: 'Under $50', value: '0-50' },
     { label: '$50 - $100', value: '50-100' },
@@ -55,6 +57,7 @@ export function ProductListing() {
     const params = new URLSearchParams()
     if (filters.category) params.set('category', filters.category)
     if (filters.ageGroup) params.set('age', filters.ageGroup)
+    if (filters.gender) params.set('gender', filters.gender)
     if (filters.priceRange) params.set('price', filters.priceRange)
     if (filters.showSold) params.set('sold', 'true')
     setSearchParams(params)
@@ -97,6 +100,10 @@ export function ProductListing() {
 
       if (filters.ageGroup) {
         query = query.eq('age_group', filters.ageGroup)
+      }
+
+      if (filters.gender) {
+        query = query.eq('gender', filters.gender)
       }
 
       if (filters.size) {
@@ -239,6 +246,27 @@ export function ProductListing() {
                       {ageGroups.map((age) => (
                         <SelectItem key={age} value={age}>
                           {age}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Gender Filter */}
+                <div>
+                  <h3 className="font-medium mb-3">Gender</h3>
+                  <Select
+                    value={filters.gender || ''}
+                    onValueChange={(value) => updateFilter('gender', value || undefined)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All genders" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All genders</SelectItem>
+                      {genders.map((gender) => (
+                        <SelectItem key={gender} value={gender}>
+                          {gender}
                         </SelectItem>
                       ))}
                     </SelectContent>

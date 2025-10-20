@@ -39,9 +39,9 @@ const Navigation = () => {
             {/* Logo */}
             <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate('/')}>
               <img
-                src="/logo.png" // Will be updated with Supabase Storage URL later
-                alt="Nanny Rae Rae's"
-                className="h-12 lg:h-16"
+                src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/logo/logo-light.png"
+                alt="Nanny Rae Rae's Handmade Children's Clothing"
+                className="h-10 md:h-12 lg:h-14 w-auto object-contain"
                 onError={(e) => {
                   // Fallback to text if logo image fails to load
                   e.currentTarget.style.display = 'none';
@@ -52,7 +52,6 @@ const Navigation = () => {
                 <h1 className="font-playfair text-2xl lg:text-3xl font-bold text-primary">
                   Nanny Rae Rae's
                 </h1>
-                <p className="text-xs text-muted-foreground font-inter">handmade with love</p>
               </div>
             </div>
 

@@ -236,10 +236,10 @@ $$ LANGUAGE plpgsql;
 
 -- Insert default categories
 INSERT INTO categories (name, slug, age_group, display_order) VALUES
-('Onesies & Bodysuits', 'onesies-bodysuits', ARRAY['0-3m', '3-12m'], 1),
-('Dresses & Skirts', 'dresses-skirts', ARRAY['3-12m', '1-3y', '3-5y', '5-10y'], 2),
-('Tops & Shirts', 'tops-shirts', ARRAY['0-3m', '3-12m', '1-3y', '3-5y', '5-10y'], 3),
-('Pants & Leggings', 'pants-leggings', ARRAY['0-3m', '3-12m', '1-3y', '3-5y', '5-10y'], 4),
-('Outerwear', 'outerwear', ARRAY['0-3m', '3-12m', '1-3y', '3-5y', '5-10y'], 5),
-('Sets & Outfits', 'sets-outfits', ARRAY['0-3m', '3-12m', '1-3y', '3-5y', '5-10y'], 6),
-('Accessories', 'accessories', ARRAY['0-3m', '3-12m', '1-3y', '3-5y', '5-10y'], 7);
+('Onesies & Bodysuits', 'onesies-bodysuits', ARRAY['3mths', '6mths', '9mths'], 1),
+('Dresses & Skirts', 'dresses-skirts', ARRAY['6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'], 2),
+('Tops & Shirts', 'tops-shirts', ARRAY['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'], 3),
+('Pants & Leggings', 'pants-leggings', ARRAY['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'], 4),
+('Outerwear', 'outerwear', ARRAY['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'], 5),
+('Sets & Outfits', 'sets-outfits', ARRAY['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'], 6),
+('Accessories', 'accessories', ARRAY['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'], 7);

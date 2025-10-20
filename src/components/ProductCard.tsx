@@ -88,13 +88,9 @@ export function ProductCard({ product, showAddToCart = true }: ProductCardProps)
 
           {/* Status Badge */}
           <div className="absolute top-3 right-3">
-            {isSold ? (
+            {isSold && (
               <Badge variant="destructive" className="bg-red-600 text-white">
                 Sold
-              </Badge>
-            ) : (
-              <Badge variant="default" className="bg-green-600 text-white">
-                Available
               </Badge>
             )}
           </div>

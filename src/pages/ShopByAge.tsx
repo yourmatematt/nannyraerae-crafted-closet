@@ -28,39 +28,57 @@ const ShopByAge = () => {
   const { addToCart } = useCart();
   
   const ageData = {
-    "0-3m": {
-      title: "Newborn (0-3 months)",
+    "3mths": {
+      title: "3 Months",
       description: "Perfectly sized for your precious little one",
       hero: "Soft, gentle fabrics for baby's delicate skin",
       advice: "Easy-dress designs with snap closures for quick diaper changes"
     },
-    "3-12m": {
-      title: "Baby (3-12 months)",
+    "6mths": {
+      title: "6 Months",
       description: "Growing and exploring in comfort",
       hero: "Durable designs for active babies",
       advice: "Stretchy fabrics that move with your baby's development"
     },
-    "1-3y": {
-      title: "Toddler (1-3 years)",
+    "9mths": {
+      title: "9 Months",
+      description: "Mobile babies need comfortable clothes",
+      hero: "Crawling-friendly designs that stay in place",
+      advice: "Reinforced knees and flexible fits for active exploration"
+    },
+    "1yr": {
+      title: "1 Year",
       description: "Perfect for little adventurers",
       hero: "Easy-dress designs for active toddlers",
       advice: "Independent dressing features with simple closures"
     },
-    "3-5y": {
-      title: "Preschool (3-5 years)",
-      description: "Ready for school and play",
+    "2yrs": {
+      title: "2 Years",
+      description: "For confident little walkers",
+      hero: "Durable designs for playground adventures",
+      advice: "Easy-care fabrics that handle spills and messes"
+    },
+    "3yrs": {
+      title: "3 Years",
+      description: "Ready for preschool and play",
       hero: "Comfortable styles for all-day wear",
       advice: "Machine washable designs that handle playground adventures"
     },
-    "5-10y": {
-      title: "School Age (5-10 years)",
+    "4yrs": {
+      title: "4 Years",
+      description: "Independent dressers need practical styles",
+      hero: "Self-dressing friendly designs",
+      advice: "Easy fasteners and comfortable fits for growing independence"
+    },
+    "5yrs": {
+      title: "5 Years",
       description: "Stylish pieces for confident kids",
       hero: "Fashion-forward designs kids love to wear",
       advice: "Age-appropriate styles with quality that lasts"
     }
   };
 
-  const currentAge = ageData[ageGroup as keyof typeof ageData] || ageData["1-3y"];
+  const currentAge = ageData[ageGroup as keyof typeof ageData] || ageData["1yr"];
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['productsByAge', ageGroup],

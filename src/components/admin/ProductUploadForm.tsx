@@ -20,7 +20,7 @@ import { SIZE_OPTIONS } from '../../types'
 const productSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
-  age_group: z.enum(['0-3m', '3-12m', '1-3y', '3-5y', '5-10y']),
+  age_group: z.enum(['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs']),
   size: z.string().min(1, 'Size is required'),
   price: z.number().min(1, 'Price must be greater than 0'),
   product_type: z.string().min(1, 'Product type is required'),
@@ -53,7 +53,7 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      age_group: '1-3y',
+      age_group: '1yr',
       collection: '',
       gift_category: '',
       is_gift_idea: false,
@@ -304,14 +304,17 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Top">Top</SelectItem>
-                      <SelectItem value="Dress">Dress</SelectItem>
-                      <SelectItem value="Overalls">Overalls</SelectItem>
-                      <SelectItem value="Romper">Romper</SelectItem>
-                      <SelectItem value="Pants">Pants</SelectItem>
-                      <SelectItem value="Jacket">Jacket</SelectItem>
                       <SelectItem value="Accessories">Accessories</SelectItem>
+                      <SelectItem value="Dress">Dress</SelectItem>
+                      <SelectItem value="Jacket">Jacket</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="Overalls">Overalls</SelectItem>
+                      <SelectItem value="Pants">Pants</SelectItem>
+                      <SelectItem value="Romper">Romper</SelectItem>
+                      <SelectItem value="Sets">Sets</SelectItem>
+                      <SelectItem value="Shirts">Shirts</SelectItem>
+                      <SelectItem value="Shorts">Shorts</SelectItem>
+                      <SelectItem value="Top">Top</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.product_type && (
@@ -431,11 +434,14 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0-3m">0-3 months</SelectItem>
-                      <SelectItem value="3-12m">3-12 months</SelectItem>
-                      <SelectItem value="1-3y">1-3 years</SelectItem>
-                      <SelectItem value="3-5y">3-5 years</SelectItem>
-                      <SelectItem value="5-10y">5-10 years</SelectItem>
+                      <SelectItem value="3mths">3 months</SelectItem>
+                      <SelectItem value="6mths">6 months</SelectItem>
+                      <SelectItem value="9mths">9 months</SelectItem>
+                      <SelectItem value="1yr">1 year</SelectItem>
+                      <SelectItem value="2yrs">2 years</SelectItem>
+                      <SelectItem value="3yrs">3 years</SelectItem>
+                      <SelectItem value="4yrs">4 years</SelectItem>
+                      <SelectItem value="5yrs">5 years</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

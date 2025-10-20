@@ -53,15 +53,18 @@ export interface ProductWithCategory extends Product {
 }
 
 // Age group options
-export type AgeGroup = '0-3m' | '3-12m' | '1-3y' | '3-5y' | '5-10y'
+export type AgeGroup = '3mths' | '6mths' | '9mths' | '1yr' | '2yrs' | '3yrs' | '4yrs' | '5yrs'
 
 // Size options mapped to age groups
 export const SIZE_OPTIONS: Record<AgeGroup, string[]> = {
-  '0-3m': ['00', '0'],
-  '3-12m': ['0', '1'],
-  '1-3y': ['1', '2'],
-  '3-5y': ['3', '4', '5'],
-  '5-10y': ['6', '7', '8', '9', '10']
+  '3mths': ['00', '0'],
+  '6mths': ['0'],
+  '9mths': ['0', '1'],
+  '1yr': ['1'],
+  '2yrs': ['2'],
+  '3yrs': ['3'],
+  '4yrs': ['4'],
+  '5yrs': ['5']
 }
 
 // Color options
@@ -75,6 +78,9 @@ export const FABRIC_OPTIONS = [
   'Cotton', 'Organic Cotton', 'Bamboo', 'Linen', 'Jersey', 'Muslin',
   'Flannel', 'Corduroy', 'Denim', 'Fleece', 'Cotton Blend'
 ]
+
+// Product type options
+export type ProductType = 'Accessories' | 'Dress' | 'Jacket' | 'Other' | 'Overalls' | 'Pants' | 'Romper' | 'Sets' | 'Shirts' | 'Shorts' | 'Top'
 
 // Order status types
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'

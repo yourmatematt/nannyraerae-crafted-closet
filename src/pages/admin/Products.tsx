@@ -474,14 +474,17 @@ export default function Products() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="not-selected" disabled>Not specified</SelectItem>
-                          <SelectItem value="Top">Top</SelectItem>
-                          <SelectItem value="Dress">Dress</SelectItem>
-                          <SelectItem value="Overalls">Overalls</SelectItem>
-                          <SelectItem value="Romper">Romper</SelectItem>
-                          <SelectItem value="Pants">Pants</SelectItem>
-                          <SelectItem value="Jacket">Jacket</SelectItem>
                           <SelectItem value="Accessories">Accessories</SelectItem>
+                          <SelectItem value="Dress">Dress</SelectItem>
+                          <SelectItem value="Jacket">Jacket</SelectItem>
                           <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value="Overalls">Overalls</SelectItem>
+                          <SelectItem value="Pants">Pants</SelectItem>
+                          <SelectItem value="Romper">Romper</SelectItem>
+                          <SelectItem value="Sets">Sets</SelectItem>
+                          <SelectItem value="Shirts">Shirts</SelectItem>
+                          <SelectItem value="Shorts">Shorts</SelectItem>
+                          <SelectItem value="Top">Top</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -823,14 +826,17 @@ export default function Products() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="not-selected" disabled>Not specified</SelectItem>
-                    <SelectItem value="Top">Top</SelectItem>
-                    <SelectItem value="Dress">Dress</SelectItem>
-                    <SelectItem value="Overalls">Overalls</SelectItem>
-                    <SelectItem value="Romper">Romper</SelectItem>
-                    <SelectItem value="Pants">Pants</SelectItem>
-                    <SelectItem value="Jacket">Jacket</SelectItem>
                     <SelectItem value="Accessories">Accessories</SelectItem>
+                    <SelectItem value="Dress">Dress</SelectItem>
+                    <SelectItem value="Jacket">Jacket</SelectItem>
                     <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Overalls">Overalls</SelectItem>
+                    <SelectItem value="Pants">Pants</SelectItem>
+                    <SelectItem value="Romper">Romper</SelectItem>
+                    <SelectItem value="Sets">Sets</SelectItem>
+                    <SelectItem value="Shirts">Shirts</SelectItem>
+                    <SelectItem value="Shorts">Shorts</SelectItem>
+                    <SelectItem value="Top">Top</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

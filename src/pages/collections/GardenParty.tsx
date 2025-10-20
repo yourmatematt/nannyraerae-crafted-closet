@@ -27,15 +27,19 @@ interface Product {
 const FilterSection = memo(({
   selectedAgeGroup,
   selectedPriceRange,
+  selectedGender,
   productCount,
   onAgeGroupChange,
-  onPriceRangeChange
+  onPriceRangeChange,
+  onGenderChange
 }: {
   selectedAgeGroup: string;
   selectedPriceRange: string;
+  selectedGender: string;
   productCount: number;
   onAgeGroupChange: (value: string) => void;
   onPriceRangeChange: (value: string) => void;
+  onGenderChange: (value: string) => void;
 }) => (
   <section className="py-12">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,11 +66,26 @@ const FilterSection = memo(({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Ages</SelectItem>
-              <SelectItem value="0-3m">0-3 months</SelectItem>
-              <SelectItem value="3-12m">3-12 months</SelectItem>
-              <SelectItem value="1-3y">1-3 years</SelectItem>
-              <SelectItem value="3-5y">3-5 years</SelectItem>
-              <SelectItem value="5-10y">5-10 years</SelectItem>
+              <SelectItem value="3mths">3 months</SelectItem>
+              <SelectItem value="6mths">6 months</SelectItem>
+              <SelectItem value="9mths">9 months</SelectItem>
+              <SelectItem value="1yr">1 year</SelectItem>
+              <SelectItem value="2yrs">2 years</SelectItem>
+              <SelectItem value="3yrs">3 years</SelectItem>
+              <SelectItem value="4yrs">4 years</SelectItem>
+              <SelectItem value="5yrs">5 years</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedGender} onValueChange={onGenderChange}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Genders</SelectItem>
+              <SelectItem value="Boys">Boys</SelectItem>
+              <SelectItem value="Girls">Girls</SelectItem>
+              <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
             </SelectContent>
           </Select>
 
@@ -99,6 +118,7 @@ FilterSection.displayName = 'FilterSection';
 const GardenParty = () => {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
+  const [selectedGender, setSelectedGender] = useState('all');
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
 
   // Memoized callbacks to prevent unnecessary re-renders
@@ -110,14 +130,19 @@ const GardenParty = () => {
     setSelectedPriceRange(value);
   }, []);
 
+  const handleGenderChange = useCallback((value: string) => {
+    setSelectedGender(value);
+  }, []);
+
   // Reset all filters function
   const resetFilters = useCallback(() => {
     setSelectedAgeGroup('all');
     setSelectedPriceRange('all');
+    setSelectedGender('all');
   }, []);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['gardenPartyCollection', selectedAgeGroup, selectedPriceRange],
+    queryKey: ['gardenPartyCollection', selectedAgeGroup, selectedPriceRange, selectedGender],
     queryFn: async () => {
       // Create mock data for Garden Party collection
       const mockProducts = [
@@ -130,7 +155,7 @@ const GardenParty = () => {
           badge: "Garden Party",
           stock_quantity: 4,
           in_stock: true,
-          age_group: "1-3y",
+          age_group: "2yrs",
           collection: "Garden Party"
         },
         {
@@ -142,7 +167,7 @@ const GardenParty = () => {
           badge: "Garden Party",
           stock_quantity: 5,
           in_stock: true,
-          age_group: "1-3y",
+          age_group: "2yrs",
           collection: "Garden Party"
         },
         {
@@ -154,7 +179,7 @@ const GardenParty = () => {
           badge: "Garden Party",
           stock_quantity: 3,
           in_stock: true,
-          age_group: "3-5y",
+          age_group: "3yrs",
           collection: "Garden Party"
         },
         {
@@ -166,7 +191,7 @@ const GardenParty = () => {
           badge: "Garden Party",
           stock_quantity: 6,
           in_stock: true,
-          age_group: "1-3y",
+          age_group: "2yrs",
           collection: "Garden Party"
         },
         {
@@ -178,7 +203,7 @@ const GardenParty = () => {
           badge: "Garden Party",
           stock_quantity: 4,
           in_stock: true,
-          age_group: "3-5y",
+          age_group: "3yrs",
           collection: "Garden Party"
         },
         {
@@ -190,7 +215,7 @@ const GardenParty = () => {
           badge: "Garden Party",
           stock_quantity: 2,
           in_stock: true,
-          age_group: "5-10y",
+          age_group: "5yrs",
           collection: "Garden Party"
         }
       ];
@@ -207,6 +232,11 @@ const GardenParty = () => {
         // Apply age group filter
         if (selectedAgeGroup !== 'all') {
           query = query.eq('age_group', selectedAgeGroup);
+        }
+
+        // Apply gender filter
+        if (selectedGender !== 'all') {
+          query = query.eq('gender', selectedGender);
         }
 
         // Apply price range filter
@@ -234,6 +264,10 @@ const GardenParty = () => {
 
       if (selectedAgeGroup !== 'all') {
         filteredProducts = filteredProducts.filter(p => p.age_group === selectedAgeGroup);
+      }
+
+      if (selectedGender !== 'all') {
+        filteredProducts = filteredProducts.filter(p => (p as any).gender === selectedGender);
       }
 
       if (selectedPriceRange === 'under50') {
@@ -318,9 +352,11 @@ const GardenParty = () => {
       <FilterSection
         selectedAgeGroup={selectedAgeGroup}
         selectedPriceRange={selectedPriceRange}
+        selectedGender={selectedGender}
         productCount={products.length}
         onAgeGroupChange={handleAgeGroupChange}
         onPriceRangeChange={handlePriceRangeChange}
+        onGenderChange={handleGenderChange}
       />
 
       {/* Memoized Products Grid */}

@@ -87,19 +87,20 @@ const Footer = () => {
           <div className="pt-12 pb-8 border-b border-white/10">
             <div className="flex justify-center">
               <img
-                src="/logo.png"
-                alt="Nanny Rae Rae's"
-                className="h-16 md:h-20 filter brightness-0 invert"
+                src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/logo/logo-dark.png"
+                alt="Nanny Rae Rae's Handmade Children's Clothing"
+                className="h-20 md:h-24 lg:h-28 w-auto object-contain cursor-pointer"
+                loading="lazy"
+                onClick={() => navigate('/')}
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
                   (e.currentTarget.nextElementSibling as HTMLElement).style.display = "block";
                 }}
               />
-              <div style={{ display: "none" }} className="text-center">
-                <h3 className="font-playfair text-2xl md:text-3xl font-bold">
+              <div style={{ display: "none" }} className="text-center cursor-pointer" onClick={() => navigate('/')}>
+                <h3 className="font-playfair text-3xl md:text-4xl lg:text-5xl font-bold">
                   Nanny Rae Rae&apos;s
                 </h3>
-                <p className="text-sm text-white/80 font-inter">handmade with love</p>
               </div>
             </div>
           </div>
@@ -132,9 +133,9 @@ const Footer = () => {
               <ul className="space-y-3 font-inter text-white/80">
                 <li><button onClick={() => navigate('/new-arrivals')} className="hover:text-white transition-colors text-left">New Arrivals</button></li>
                 <li><button onClick={() => navigate('/new-arrivals')} className="hover:text-white transition-colors text-left">Best Sellers</button></li>
-                <li><button onClick={() => navigate('/shop/age/0-3m')} className="hover:text-white transition-colors text-left">Baby (0-12m)</button></li>
-                <li><button onClick={() => navigate('/shop/age/1-3y')} className="hover:text-white transition-colors text-left">Toddler (1-3yrs)</button></li>
-                <li><button onClick={() => navigate('/shop/age/3-5y')} className="hover:text-white transition-colors text-left">Kids (3-10yrs)</button></li>
+                <li><button onClick={() => navigate('/shop/age/3mths')} className="hover:text-white transition-colors text-left">Baby (3-9m)</button></li>
+                <li><button onClick={() => navigate('/shop/age/1yr')} className="hover:text-white transition-colors text-left">Toddler (1-2yrs)</button></li>
+                <li><button onClick={() => navigate('/shop/age/3yrs')} className="hover:text-white transition-colors text-left">Kids (3-5yrs)</button></li>
                 <li><button onClick={() => navigate('/gifts')} className="hover:text-white transition-colors text-left">Gift Ideas</button></li>
               </ul>
             </div>

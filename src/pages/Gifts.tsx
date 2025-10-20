@@ -49,52 +49,52 @@ const Gifts = () => {
       const allMockProducts = [
         {
           id: 1, name: 'Garden Party Dress', price: 45, image_url: null,
-          age_group: '1-3y', is_gift_idea: true, stock: 5, is_active: true,
+          age_group: '1yr', is_gift_idea: true, stock: 5, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 2, name: 'Special Romper', price: 75, image_url: null,
-          age_group: '3-12m', is_gift_idea: true, stock: 3, is_active: true,
+          age_group: '6mths', is_gift_idea: true, stock: 3, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 3, name: 'Luxury Gift Set', price: 120, image_url: null,
-          age_group: '1-3y', is_gift_idea: true, stock: 2, is_active: true,
+          age_group: '2yrs', is_gift_idea: true, stock: 2, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 4, name: 'Premium Outfit', price: 180, image_url: null,
-          age_group: '3-5y', is_gift_idea: true, stock: 1, is_active: true,
+          age_group: '3yrs', is_gift_idea: true, stock: 1, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 5, name: 'Sweet Hair Bow', price: 25, image_url: null,
-          age_group: '1-3y', is_gift_idea: true, stock: 10, is_active: true,
+          age_group: '1yr', is_gift_idea: true, stock: 10, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 6, name: 'Deluxe Gift Bundle', price: 200, image_url: null,
-          age_group: '3-5y', is_gift_idea: true, stock: 1, is_active: true,
+          age_group: '4yrs', is_gift_idea: true, stock: 1, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 7, name: 'Cute Hair Clip', price: 15, image_url: null,
-          age_group: '1-3y', is_gift_idea: true, stock: 8, is_active: true,
+          age_group: '2yrs', is_gift_idea: true, stock: 8, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 8, name: 'Play Set Outfit', price: 85, image_url: null,
-          age_group: '3-5y', is_gift_idea: true, stock: 4, is_active: true,
+          age_group: '3yrs', is_gift_idea: true, stock: 4, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 9, name: 'Designer Dress', price: 135, image_url: null,
-          age_group: '1-3y', is_gift_idea: true, stock: 2, is_active: true,
+          age_group: '1yr', is_gift_idea: true, stock: 2, is_active: true,
           created_at: new Date().toISOString()
         },
         {
           id: 10, name: 'Luxury Collection Set', price: 250, image_url: null,
-          age_group: '3-5y', is_gift_idea: true, stock: 1, is_active: true,
+          age_group: '4yrs', is_gift_idea: true, stock: 1, is_active: true,
           created_at: new Date().toISOString()
         }
       ]
@@ -301,11 +301,26 @@ const Gifts = () => {
                   <SelectValue placeholder="By Age" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0-3m">Newborn (0-3m)</SelectItem>
-                  <SelectItem value="3-12m">Baby (3-12m)</SelectItem>
-                  <SelectItem value="1-3y">Toddler (1-3y)</SelectItem>
-                  <SelectItem value="3-5y">Preschool (3-5y)</SelectItem>
-                  <SelectItem value="5-10y">School Age (5-10y)</SelectItem>
+                  <SelectItem value="3mths">3 months</SelectItem>
+                  <SelectItem value="6mths">6 months</SelectItem>
+                  <SelectItem value="9mths">9 months</SelectItem>
+                  <SelectItem value="1yr">1 year</SelectItem>
+                  <SelectItem value="2yrs">2 years</SelectItem>
+                  <SelectItem value="3yrs">3 years</SelectItem>
+                  <SelectItem value="4yrs">4 years</SelectItem>
+                  <SelectItem value="5yrs">5 years</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="By Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Genders</SelectItem>
+                  <SelectItem value="Boys">Boys</SelectItem>
+                  <SelectItem value="Girls">Girls</SelectItem>
+                  <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -428,7 +443,7 @@ const Gifts = () => {
                   key={product.id}
                   product={{
                     ...product,
-                    badge: product.stock > 0 ? 'Available' : 'Sold Out',
+                    badge: product.stock > 0 ? undefined : 'Sold Out',
                     description: `Perfect for ${product.age_group || 'all ages'}`
                   }}
                 />

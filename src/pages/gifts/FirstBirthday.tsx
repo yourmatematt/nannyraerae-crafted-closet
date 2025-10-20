@@ -53,11 +53,14 @@ const FilterSection = memo(({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Ages</SelectItem>
-              <SelectItem value="0-3m">0-3 months</SelectItem>
-              <SelectItem value="3-12m">3-12 months</SelectItem>
-              <SelectItem value="1-3y">1-3 years</SelectItem>
-              <SelectItem value="3-5y">3-5 years</SelectItem>
-              <SelectItem value="5-10y">5-10 years</SelectItem>
+              <SelectItem value="3mths">3 months</SelectItem>
+              <SelectItem value="6mths">6 months</SelectItem>
+              <SelectItem value="9mths">9 months</SelectItem>
+              <SelectItem value="1yr">1 year</SelectItem>
+              <SelectItem value="2yrs">2 years</SelectItem>
+              <SelectItem value="3yrs">3 years</SelectItem>
+              <SelectItem value="4yrs">4 years</SelectItem>
+              <SelectItem value="5yrs">5 years</SelectItem>
             </SelectContent>
           </Select>
 
@@ -114,7 +117,7 @@ const FirstBirthday = () => {
           badge: "Birthday Special",
           stock_quantity: 3,
           in_stock: true,
-          age_group: "1-3y",
+          age_group: "1yr",
           gift_category: "First Birthday"
         },
         {
@@ -126,7 +129,7 @@ const FirstBirthday = () => {
           badge: "Popular",
           stock_quantity: 5,
           in_stock: true,
-          age_group: "3-12m",
+          age_group: "9mths",
           gift_category: "First Birthday"
         },
         {
@@ -138,7 +141,7 @@ const FirstBirthday = () => {
           badge: "Premium",
           stock_quantity: 2,
           in_stock: true,
-          age_group: "1-3y",
+          age_group: "1yr",
           gift_category: "First Birthday"
         },
         {
@@ -150,7 +153,7 @@ const FirstBirthday = () => {
           badge: null,
           stock_quantity: 4,
           in_stock: true,
-          age_group: "1-3y",
+          age_group: "1yr",
           gift_category: "First Birthday"
         },
         {
@@ -162,7 +165,7 @@ const FirstBirthday = () => {
           badge: "Limited",
           stock_quantity: 1,
           in_stock: true,
-          age_group: "3-12m",
+          age_group: "9mths",
           gift_category: "First Birthday"
         }
       ];

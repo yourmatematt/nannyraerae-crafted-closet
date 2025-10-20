@@ -414,34 +414,52 @@ function ProductInfoTabs({ product }: { product: Product | null }) {
                   </thead>
                   <tbody className="text-sm">
                     <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">0-3m</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">3mths</td>
                       <td className="border border-gray-300 px-4 py-2 text-sm">56-62</td>
                       <td className="border border-gray-300 px-4 py-2 text-sm">38-42</td>
                       <td className="border border-gray-300 px-4 py-2 text-sm">38-42</td>
                     </tr>
                     <tr className="bg-gray-50 text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">3-12m</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">62-74</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">42-46</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">42-46</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">6mths</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">62-68</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">42-44</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">42-44</td>
                     </tr>
                     <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">1-3y</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">74-98</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">46-52</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">46-52</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">9mths</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">68-74</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">44-46</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">44-46</td>
                     </tr>
                     <tr className="bg-gray-50 text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">3-5y</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">98-110</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">52-56</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">52-56</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">1yr</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">74-80</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">46-48</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">46-48</td>
                     </tr>
                     <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">5-10y</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">110-140</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">56-68</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">56-66</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">2yrs</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">80-92</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">48-51</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">48-51</td>
+                    </tr>
+                    <tr className="bg-gray-50 text-sm">
+                      <td className="border border-gray-300 px-4 py-2 text-sm">3yrs</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">92-98</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">51-53</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">51-53</td>
+                    </tr>
+                    <tr className="text-sm">
+                      <td className="border border-gray-300 px-4 py-2 text-sm">4yrs</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">98-104</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">53-55</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">53-55</td>
+                    </tr>
+                    <tr className="bg-gray-50 text-sm">
+                      <td className="border border-gray-300 px-4 py-2 text-sm">5yrs</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">104-110</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">55-57</td>
+                      <td className="border border-gray-300 px-4 py-2 text-sm">55-57</td>
                     </tr>
                   </tbody>
                 </table>

@@ -130,14 +130,12 @@ const About = () => {
                 </p>
               </div>
               <div className="order-1 lg:order-2">
-                <div className="aspect-[4/3] bg-gradient-soft rounded-2xl shadow-medium flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-3xl">👶</span>
-                    </div>
-                    <p className="font-inter text-lg opacity-90">Grandchildren wearing my first creations</p>
-                  </div>
-                </div>
+                <img
+                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/started-with-love.jpg"
+                  alt="Grandmother Rae with her grandchildren wearing her first handmade creations, showing the love and care that started it all"
+                  className="w-full aspect-[4/3] object-cover rounded-2xl shadow-medium"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>
@@ -146,14 +144,12 @@ const About = () => {
           <div className="mb-20">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="order-1">
-                <div className="aspect-[4/3] bg-gradient-hero rounded-2xl shadow-medium flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-3xl">✂️</span>
-                    </div>
-                    <p className="font-inter text-lg opacity-90">Hands sewing, selecting fabrics</p>
-                  </div>
-                </div>
+                <img
+                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/why-handmade.png"
+                  alt="Close-up of hands carefully sewing with high-quality fabrics, showing the attention to detail that makes handmade clothing special"
+                  className="w-full aspect-[4/3] object-cover rounded-2xl shadow-medium"
+                  loading="lazy"
+                />
               </div>
               <div className="order-2">
                 <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">
@@ -184,14 +180,12 @@ const About = () => {
                 </p>
               </div>
               <div className="order-1 lg:order-2">
-                <div className="aspect-[4/3] bg-gradient-warm rounded-2xl shadow-medium flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-3xl">🎨</span>
-                    </div>
-                    <p className="font-inter text-lg opacity-90">Design inspiration and sketches</p>
-                  </div>
-                </div>
+                <img
+                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/modern-traditional.png"
+                  alt="Modern children's clothing designs alongside traditional sewing tools and techniques, showing the perfect blend of contemporary style with timeless craftsmanship"
+                  className="w-full aspect-[4/3] object-cover rounded-2xl shadow-medium"
+                  loading="lazy"
+                />
               </div>
             </div>
           </div>
@@ -200,14 +194,12 @@ const About = () => {
           <div>
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="order-1">
-                <div className="aspect-[4/3] bg-gradient-soft rounded-2xl shadow-medium flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-3xl">💕</span>
-                    </div>
-                    <p className="font-inter text-lg opacity-90">Happy customers and children</p>
-                  </div>
-                </div>
+                <img
+                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/business-joy.png"
+                  alt="Happy children wearing Nanny Rae Rae's handmade clothing, playing and smiling, showing the joy that drives the business"
+                  className="w-full aspect-[4/3] object-cover rounded-2xl shadow-medium"
+                  loading="lazy"
+                />
               </div>
               <div className="order-2">
                 <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">

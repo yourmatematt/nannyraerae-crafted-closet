@@ -31,20 +31,24 @@ interface Product {
 const FilterSection = memo(({
   selectedCategory,
   selectedAgeGroup,
+  selectedGender,
   selectedPriceRange,
   categories,
   productCount,
   onCategoryChange,
   onAgeGroupChange,
+  onGenderChange,
   onPriceRangeChange
 }: {
   selectedCategory: string;
   selectedAgeGroup: string;
+  selectedGender: string;
   selectedPriceRange: string;
   categories: string[];
   productCount: number;
   onCategoryChange: (value: string) => void;
   onAgeGroupChange: (value: string) => void;
+  onGenderChange: (value: string) => void;
   onPriceRangeChange: (value: string) => void;
 }) => (
   <section className="py-12">
@@ -77,14 +81,26 @@ const FilterSection = memo(({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Ages</SelectItem>
-              <SelectItem value="0-3m">3 months</SelectItem>
-              <SelectItem value="3-12m">6 months</SelectItem>
-              <SelectItem value="1-3y">9 months</SelectItem>
-              <SelectItem value="3-5y">1 year</SelectItem>
-              <SelectItem value="5-10y">2 year</SelectItem>
-              <SelectItem value="5-10y">3 year</SelectItem>
-              <SelectItem value="5-10y">4 year</SelectItem>
-              <SelectItem value="5-10y">2 year</SelectItem>
+              <SelectItem value="3mths">3 months</SelectItem>
+              <SelectItem value="6mths">6 months</SelectItem>
+              <SelectItem value="9mths">9 months</SelectItem>
+              <SelectItem value="1yr">1 year</SelectItem>
+              <SelectItem value="2yrs">2 years</SelectItem>
+              <SelectItem value="3yrs">3 years</SelectItem>
+              <SelectItem value="4yrs">4 years</SelectItem>
+              <SelectItem value="5yrs">5 years</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={selectedGender} onValueChange={onGenderChange}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Genders</SelectItem>
+              <SelectItem value="Boys">Boys</SelectItem>
+              <SelectItem value="Girls">Girls</SelectItem>
+              <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
             </SelectContent>
           </Select>
 
@@ -129,6 +145,7 @@ const NewArrivals = () => {
   const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState('all');
+  const [selectedGender, setSelectedGender] = useState('all');
   const [selectedPriceRange, setSelectedPriceRange] = useState('all');
   const [categories, setCategories] = useState<string[]>([]);
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
@@ -142,6 +159,10 @@ const NewArrivals = () => {
     setSelectedAgeGroup(value);
   }, []);
 
+  const handleGenderChange = useCallback((value: string) => {
+    setSelectedGender(value);
+  }, []);
+
   const handlePriceRangeChange = useCallback((value: string) => {
     setSelectedPriceRange(value);
   }, []);
@@ -150,11 +171,12 @@ const NewArrivals = () => {
   const resetFilters = useCallback(() => {
     setSelectedCategory('all');
     setSelectedAgeGroup('all');
+    setSelectedGender('all');
     setSelectedPriceRange('all');
   }, []);
 
   const { data: products = [], isLoading, refetch } = useQuery({
-    queryKey: ['newArrivals', selectedCategory, selectedAgeGroup, selectedPriceRange],
+    queryKey: ['newArrivals', selectedCategory, selectedAgeGroup, selectedGender, selectedPriceRange],
     queryFn: async () => {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -174,6 +196,11 @@ const NewArrivals = () => {
       // Apply age group filter
       if (selectedAgeGroup !== 'all') {
         query = query.eq('age_group', selectedAgeGroup);
+      }
+
+      // Apply gender filter
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
       }
 
       // Apply price range filter
@@ -350,11 +377,13 @@ const NewArrivals = () => {
       <FilterSection
         selectedCategory={selectedCategory}
         selectedAgeGroup={selectedAgeGroup}
+        selectedGender={selectedGender}
         selectedPriceRange={selectedPriceRange}
         categories={categories}
         productCount={products.length}
         onCategoryChange={handleCategoryChange}
         onAgeGroupChange={handleAgeGroupChange}
+        onGenderChange={handleGenderChange}
         onPriceRangeChange={handlePriceRangeChange}
       />
 
