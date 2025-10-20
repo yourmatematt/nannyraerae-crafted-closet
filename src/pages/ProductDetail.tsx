@@ -216,13 +216,9 @@ export default function ProductDetail() {
             {/* Badges Section */}
             <div className="flex items-center gap-3 mb-2">
               <Badge variant="outline" className="px-3 py-1">{product.age_group}</Badge>
-              {isSold ? (
+              {isSold && (
                 <Badge variant="destructive" className="bg-red-600 text-white px-3 py-1">
                   Sold
-                </Badge>
-              ) : (
-                <Badge variant="default" className="bg-green-600 text-white px-3 py-1">
-                  Available
                 </Badge>
               )}
             </div>
@@ -245,7 +241,7 @@ export default function ProductDetail() {
               <Button
                 onClick={handleAddToCart}
                 disabled={addingToCart || isSold}
-                className={`w-full py-2.5 text-sm font-medium ${isSold ? 'bg-gray-400 text-gray-600 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700 text-white'}`}
+                className={`w-full py-2.5 text-sm font-medium ${isSold ? 'bg-gray-400 text-gray-600 cursor-not-allowed' : 'bg-primary hover:bg-primary/90 text-white'}`}
               >
                 {isSold ? (
                   'Sold Out'
