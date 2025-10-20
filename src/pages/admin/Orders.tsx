@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Search, Package, Eye, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Search, Package, Eye, CheckCircle, MessageCircle } from 'lucide-react'
 
 interface Order {
   id: string
@@ -40,6 +40,7 @@ interface OrderItem {
 }
 
 export default function Orders() {
+  const navigate = useNavigate()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -150,6 +151,12 @@ export default function Orders() {
                 </Link>
               </Button>
               <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={() => navigate('/admin/messages')}>
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Messages
+              </Button>
             </div>
           </div>
         </div>

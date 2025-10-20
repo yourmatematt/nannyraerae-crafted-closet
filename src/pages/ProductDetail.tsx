@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, ShoppingCart, Package, Heart, Star, Award, Shield, Truck, RefreshCw } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Package, Heart, Star, Award, Shield, Truck, RefreshCw, RotateCcw, Shirt, Sparkles } from 'lucide-react'
 import { ProductCard } from '@/components/ProductCard'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -258,25 +258,60 @@ export default function ProductDetail() {
                 )}
               </Button>
 
-              {/* Trust indicators below Add to Cart */}
-              <div className="grid grid-cols-3 gap-6 py-4 border-y border-gray-200">
-                <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <Truck className="w-6 h-6 text-green-600" />
+              {/* Trust badges with improved design */}
+              <div className="my-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Free Shipping */}
+                <div className="flex flex-col items-center text-center p-6 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="w-12 h-12 mb-3 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Truck className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Free Shipping</p>
+                  <h4 className="font-semibold text-foreground mb-1">Free Shipping</h4>
+                  <p className="text-sm text-muted-foreground">On orders over $100</p>
                 </div>
-                <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <Shield className="w-6 h-6 text-green-600" />
+
+                {/* Secure Payment */}
+                <div className="flex flex-col items-center text-center p-6 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="w-12 h-12 mb-3 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Secure Payment</p>
+                  <h4 className="font-semibold text-foreground mb-1">Secure Payment</h4>
+                  <p className="text-sm text-muted-foreground">Safe & encrypted</p>
                 </div>
-                <div className="text-center">
-                  <div className="flex justify-center mb-2">
-                    <RefreshCw className="w-6 h-6 text-green-600" />
+
+                {/* 30-Day Returns */}
+                <div className="flex flex-col items-center text-center p-6 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="w-12 h-12 mb-3 bg-primary/10 rounded-full flex items-center justify-center">
+                    <RotateCcw className="w-6 h-6 text-primary" />
                   </div>
-                  <p className="text-xs text-muted-foreground">30-Day Returns</p>
+                  <h4 className="font-semibold text-foreground mb-1">Easy Returns</h4>
+                  <p className="text-sm text-muted-foreground">30-day guarantee</p>
+                </div>
+              </div>
+
+              {/* Additional product details */}
+              <div className="mt-6 space-y-4 border-t pt-6">
+                <div className="flex items-start gap-3">
+                  <Shirt className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">One-of-a-Kind</h4>
+                    <p className="text-sm text-muted-foreground">This item is handmade and unique. No two pieces are exactly alike.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Quality Fabrics</h4>
+                    <p className="text-sm text-muted-foreground">Made from premium cotton and natural materials for comfort and durability.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Handmade in Australia</h4>
+                    <p className="text-sm text-muted-foreground">Lovingly crafted by Rae in regional Australia with years of experience.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -321,7 +356,7 @@ export default function ProductDetail() {
                   <Star className="w-8 h-8 text-blue-600" />
                 </div>
                 <h3 className="font-playfair text-xl font-bold text-foreground mb-4">
-                  One-of-a-Kind Pieces
+                  Unique Pieces
                 </h3>
                 <p className="font-inter text-muted-foreground mb-6 leading-relaxed">
                   Every item is unique - when it's gone, it's gone

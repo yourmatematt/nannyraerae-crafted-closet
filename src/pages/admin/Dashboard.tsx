@@ -14,7 +14,8 @@ import {
   Trash2,
   Eye,
   DollarSign,
-  Filter
+  Filter,
+  MessageCircle
 } from 'lucide-react'
 export function AdminDashboard() {
   const navigate = useNavigate()
@@ -153,6 +154,10 @@ export function AdminDashboard() {
             <Button variant="outline" onClick={() => navigate('/admin/orders')}>
               <Package className="w-4 h-4 mr-2" />
               View Orders
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/admin/messages')}>
+              <MessageCircle className="w-4 h-4 mr-2" />
+              Messages
             </Button>
             <Button onClick={() => navigate('/admin/products/new')}>
               <Plus className="w-4 h-4 mr-2" />

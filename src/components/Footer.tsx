@@ -1,7 +1,7 @@
 import { Instagram, Facebook, Mail, Phone, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useState } from "react";
 
 const Footer = () => {
@@ -106,11 +106,11 @@ const Footer = () => {
           </div>
 
           {/* Main */}
-          <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="py-16 grid md:grid-cols-2 lg:grid-cols-5 gap-8">
 
             {/* Brand */}
             <div className="lg:col-span-1">
-              <h3 className="font-playfair text-xl font-bold mb-4">About Us</h3>
+              <h3 className="font-playfair text-xl font-bold mb-4">About Nanny Rae Rae's</h3>
               <p className="font-inter text-white/80 mb-6 leading-relaxed">
                 Modern handmade fashion for little ones. Each piece crafted with love and designed to create lasting memories.
               </p>
@@ -129,14 +129,12 @@ const Footer = () => {
 
             {/* Shop */}
             <div>
-              <h4 className="font-playfair text-lg font-semibold mb-4">Shop</h4>
+              <h4 className="font-playfair text-lg font-semibold mb-4">Navigation</h4>
               <ul className="space-y-3 font-inter text-white/80">
                 <li><button onClick={() => navigate('/new-arrivals')} className="hover:text-white transition-colors text-left">New Arrivals</button></li>
-                <li><button onClick={() => navigate('/new-arrivals')} className="hover:text-white transition-colors text-left">Best Sellers</button></li>
-                <li><button onClick={() => navigate('/shop/age/3mths')} className="hover:text-white transition-colors text-left">Baby (3-9m)</button></li>
-                <li><button onClick={() => navigate('/shop/age/1yr')} className="hover:text-white transition-colors text-left">Toddler (1-2yrs)</button></li>
-                <li><button onClick={() => navigate('/shop/age/3yrs')} className="hover:text-white transition-colors text-left">Kids (3-5yrs)</button></li>
+                <li><button onClick={() => navigate('/collections')} className="hover:text-white transition-colors text-left">Collection</button></li>
                 <li><button onClick={() => navigate('/gifts')} className="hover:text-white transition-colors text-left">Gift Ideas</button></li>
+                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">About</button></li>
               </ul>
             </div>
 
@@ -153,6 +151,21 @@ const Footer = () => {
               </ul>
             </div>
 
+            {/* Shop By Size */}
+            <div>
+              <h4 className="font-playfair text-lg font-semibold mb-4">Shop By Age</h4>
+              <ul className="space-y-3 font-inter text-white/80">
+                <li><Link to="/new-arrivals?size=3mths" className="hover:text-white transition-colors">3 Months</Link></li>
+                <li><Link to="/new-arrivals?size=6mths" className="hover:text-white transition-colors">6 Months</Link></li>
+                <li><Link to="/new-arrivals?size=9mths" className="hover:text-white transition-colors">9 Months</Link></li>
+                <li><Link to="/new-arrivals?size=1yr" className="hover:text-white transition-colors">1 Year</Link></li>
+                <li><Link to="/new-arrivals?size=2yrs" className="hover:text-white transition-colors">2 Years</Link></li>
+                <li><Link to="/new-arrivals?size=3yrs" className="hover:text-white transition-colors">3 Years</Link></li>
+                <li><Link to="/new-arrivals?size=4yrs" className="hover:text-white transition-colors">4 Years</Link></li>
+                <li><Link to="/new-arrivals?size=5yrs" className="hover:text-white transition-colors">5 Years</Link></li>
+              </ul>
+            </div>
+
             {/* Contact */}
             <div>
               <h4 className="font-playfair text-lg font-semibold mb-4">Get in Touch</h4>
@@ -160,13 +173,13 @@ const Footer = () => {
                 <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 mt-0.5 text-white/60" />
                   <div>
-                    <p className="text-white">hello@nannyraeraes.com.au</p>
-                    <p className="text-sm">We&apos;d love to hear from you!</p>
+                    <p className="text-white">hello@bynannyraerae.com.au</p>
+                    <p className="text-sm">I&apos;d love to hear from you!</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                 
-                
+
+
                 </div>
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 mt-0.5 text-white/60" />

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/contexts/CartContext";
@@ -143,6 +144,7 @@ FilterSection.displayName = 'FilterSection';
 
 const NewArrivals = () => {
   const { addToCart } = useCart();
+  const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState('all');
   const [selectedGender, setSelectedGender] = useState('all');
@@ -275,6 +277,18 @@ const NewArrivals = () => {
   };
 
   const recentProducts = products.filter(p => getDaysOld(p.created_at) <= 3);
+
+  // Handle URL search parameters on component mount
+  useEffect(() => {
+    const sizeParam = searchParams.get('size');
+    if (sizeParam) {
+      // Valid size values that match our age group options
+      const validSizes = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'];
+      if (validSizes.includes(sizeParam)) {
+        setSelectedAgeGroup(sizeParam);
+      }
+    }
+  }, [searchParams]);
 
   // Fetch categories on component mount
   useEffect(() => {

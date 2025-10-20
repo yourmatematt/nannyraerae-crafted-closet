@@ -7,6 +7,7 @@ import { CartProvider } from "./contexts/CartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
 import { PageTransition } from "./components/PageTransition";
+import { TawkWidget } from "./components/TawkWidget";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewArrivals from "./pages/NewArrivals";
@@ -40,6 +41,7 @@ import { AdminDashboard } from "./pages/admin/Dashboard";
 import Orders from "./pages/admin/Orders";
 import Products from "./pages/admin/Products";
 import { AddProduct } from "./pages/admin/AddProduct";
+import AdminMessages from "./pages/admin/Messages";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -53,6 +55,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
+            <TawkWidget />
             <PageTransition>
               <Routes>
               <Route path="/" element={<Index />} />
@@ -109,6 +112,11 @@ const App = () => (
               <Route path="/admin/products/new" element={
                 <ProtectedRoute>
                   <AddProduct />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/messages" element={
+                <ProtectedRoute>
+                  <AdminMessages />
                 </ProtectedRoute>
               } />
 

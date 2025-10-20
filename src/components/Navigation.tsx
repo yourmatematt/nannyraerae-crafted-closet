@@ -1,15 +1,19 @@
-import { Search, User, ShoppingBag, ChevronDown } from "lucide-react";
+import { User, ShoppingBag, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/hooks/useAuth";
+import { LoginModal } from "@/components/auth/LoginModal";
 import { cn } from "@/lib/utils";
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const navigate = useNavigate();
   const { itemCount } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,51 +69,67 @@ const Navigation = () => {
                 New Arrivals
               </Button>
 
-              {/* Shop by Age dropdown - REMOVED */}
-              {/*
+              {/* Shop By Size dropdown */}
               <div className="relative group">
                 <Button
                   variant="ghost"
                   className="font-inter font-medium text-foreground hover:text-primary flex items-center gap-1"
                 >
-                  Shop by Age <ChevronDown className="h-4 w-4" />
+                  Shop By Size <ChevronDown className="h-4 w-4" />
                 </Button>
                 <div className="absolute top-full left-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-medium opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="p-2">
-                    <button
+                    <Link
+                      to="/new-arrivals?size=3mths"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
-                      onClick={() => navigate('/shop/age/0-3m')}
                     >
-                      0-3 months
-                    </button>
-                    <button
+                      3 Months
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=6mths"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
-                      onClick={() => navigate('/shop/age/3-12m')}
                     >
-                      3-12 months
-                    </button>
-                    <button
+                      6 Months
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=9mths"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
-                      onClick={() => navigate('/shop/age/1-3y')}
                     >
-                      1-3 years
-                    </button>
-                    <button
+                      9 Months
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=1yr"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
-                      onClick={() => navigate('/shop/age/3-5y')}
                     >
-                      3-5 years
-                    </button>
-                    <button
+                      1 Year
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=2yrs"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
-                      onClick={() => navigate('/shop/age/5-10y')}
                     >
-                      5-10 years
-                    </button>
+                      2 Years
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=3yrs"
+                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
+                    >
+                      3 Years
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=4yrs"
+                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
+                    >
+                      4 Years
+                    </Link>
+                    <Link
+                      to="/new-arrivals?size=5yrs"
+                      className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
+                    >
+                      5 Years
+                    </Link>
                   </div>
                 </div>
               </div>
-              */}
 
               <Button
                 variant="ghost"
@@ -143,14 +163,19 @@ const Navigation = () => {
                 </Button>
               </div>
 
-              {/* Search */}
-              <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
-                <Search className="h-5 w-5" />
-              </Button>
 
               {/* Account */}
-              <Button variant="ghost" size="icon" className="text-foreground hover:text-primary">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-foreground hover:text-primary relative"
+                onClick={() => setIsLoginModalOpen(true)}
+                aria-label={user ? "My Account" : "Login"}
+              >
                 <User className="h-5 w-5" />
+                {user && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+                )}
               </Button>
 
               {/* Cart */}
@@ -200,16 +225,65 @@ const Navigation = () => {
                 >
                   New Arrivals
                 </Button>
-                {/* Shop by Age - REMOVED */}
-                {/*
-                <Button
-                  variant="ghost"
-                  className="justify-start font-inter font-medium text-foreground"
-                  onClick={() => { navigate('/shop/age/1-3y'); setIsMenuOpen(false); }}
-                >
-                  Shop by Age
-                </Button>
-                */}
+                <div className="flex flex-col">
+                  <span className="px-4 py-2 text-sm font-medium text-foreground border-b border-border mb-2">Shop By Size</span>
+                  <Link
+                    to="/new-arrivals?size=3mths"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    3 Months
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=6mths"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    6 Months
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=9mths"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    9 Months
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=1yr"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    1 Year
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=2yrs"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    2 Years
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=3yrs"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    3 Years
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=4yrs"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    4 Years
+                  </Link>
+                  <Link
+                    to="/new-arrivals?size=5yrs"
+                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    5 Years
+                  </Link>
+                </div>
                 <Button
                   variant="ghost"
                   className="justify-start font-inter font-medium text-foreground"
@@ -236,6 +310,12 @@ const Navigation = () => {
           )}
         </nav>
       </header>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   );
 };

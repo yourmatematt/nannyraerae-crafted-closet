@@ -156,7 +156,7 @@ const Collections = () => {
       {/* Page Header */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Collections</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Nanny Rae Rae's Collection</h1>
           <p className="text-lg text-gray-600 mb-10">
             Each collection tells a story through fabric and design
           </p>
