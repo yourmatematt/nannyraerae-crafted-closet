@@ -4,14 +4,12 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { Trash2, ShoppingBag } from "lucide-react";
-import { createCheckoutSessionAPI } from "@/lib/checkout";
 import { toast } from "sonner";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const Cart = () => {
   const navigate = useNavigate();
   const { items, itemCount, subtotal, removeFromCart } = useCart();
-  const [isLoading, setIsLoading] = useState(false);
 
   const shipping = 12.00; // Standard flat-rate shipping
   const total = subtotal + shipping;
@@ -23,42 +21,22 @@ const Cart = () => {
     }).format(amount);
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (items.length === 0) {
       toast.error('Your cart is empty');
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      await createCheckoutSessionAPI({
-        items,
-        subtotal,
-        shipping,
-        total,
-      });
-      // If we reach here, the redirect didn't happen - something went wrong
-      toast.error('Failed to redirect to checkout. Please try again.');
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Checkout error:', error);
-      let errorMessage = 'Failed to proceed to checkout. Please try again.';
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-
-      toast.error(errorMessage);
-      setIsLoading(false);
-    }
+    // Navigate to /checkout page instead of Stripe redirect
+    navigate('/checkout');
   };
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={cn(
+        "min-h-screen bg-gray-50",
+        "pt-20 lg:pt-24"
+      )}>
         <Navigation />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -88,7 +66,10 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn(
+      "min-h-screen bg-gray-50",
+      items.length > 0 ? "pt-32 lg:pt-28" : "pt-20 lg:pt-24"
+    )}>
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,9 +182,9 @@ const Cart = () => {
                   className="w-full font-inter font-semibold"
                   size="lg"
                   onClick={handleCheckout}
-                  disabled={isLoading || items.length === 0}
+                  disabled={items.length === 0}
                 >
-                  {isLoading ? 'Processing...' : 'Proceed to Checkout'}
+                  Proceed to Checkout
                 </Button>
                 <Button
                   variant="outline"

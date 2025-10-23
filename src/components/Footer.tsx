@@ -23,7 +23,7 @@ const Footer = () => {
   const [email, setEmail] = useState("");
 
   // Pages where newsletter should NOT be shown
-  const excludeNewsletterPages = ["/about", "/collections"];
+  const excludeNewsletterPages = ["/about", "/collection"];
   const showNewsletter = !excludeNewsletterPages.includes(location.pathname);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -170,7 +170,7 @@ const Footer = () => {
               <h4 className="font-playfair text-lg font-semibold mb-4">Navigation</h4>
               <ul className="space-y-3 font-inter text-white/80">
                 <li><button onClick={() => navigate('/new-arrivals')} className="hover:text-white transition-colors text-left">New Arrivals</button></li>
-                <li><button onClick={() => navigate('/collections')} className="hover:text-white transition-colors text-left">Collection</button></li>
+                <li><button onClick={() => navigate('/collection')} className="hover:text-white transition-colors text-left">Collection</button></li>
                 <li><button onClick={() => navigate('/gifts')} className="hover:text-white transition-colors text-left">Gift Ideas</button></li>
                 <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors text-left">About</button></li>
               </ul>
@@ -189,18 +189,18 @@ const Footer = () => {
               </ul>
             </div>
 
-            {/* Shop By Size */}
+            {/* Shop By Age */}
             <div>
               <h4 className="font-playfair text-lg font-semibold mb-4">Shop By Age</h4>
               <ul className="space-y-3 font-inter text-white/80">
-                <li><Link to="/new-arrivals?size=3mths" className="hover:text-white transition-colors">3 Months</Link></li>
-                <li><Link to="/new-arrivals?size=6mths" className="hover:text-white transition-colors">6 Months</Link></li>
-                <li><Link to="/new-arrivals?size=9mths" className="hover:text-white transition-colors">9 Months</Link></li>
-                <li><Link to="/new-arrivals?size=1yr" className="hover:text-white transition-colors">1 Year</Link></li>
-                <li><Link to="/new-arrivals?size=2yrs" className="hover:text-white transition-colors">2 Years</Link></li>
-                <li><Link to="/new-arrivals?size=3yrs" className="hover:text-white transition-colors">3 Years</Link></li>
-                <li><Link to="/new-arrivals?size=4yrs" className="hover:text-white transition-colors">4 Years</Link></li>
-                <li><Link to="/new-arrivals?size=5yrs" className="hover:text-white transition-colors">5 Years</Link></li>
+                <li><Link to="/collection?size=3mths" className="hover:text-white transition-colors">3 Months</Link></li>
+                <li><Link to="/collection?size=6mths" className="hover:text-white transition-colors">6 Months</Link></li>
+                <li><Link to="/collection?size=9mths" className="hover:text-white transition-colors">9 Months</Link></li>
+                <li><Link to="/collection?size=1yr" className="hover:text-white transition-colors">1 Year</Link></li>
+                <li><Link to="/collection?size=2yrs" className="hover:text-white transition-colors">2 Years</Link></li>
+                <li><Link to="/collection?size=3yrs" className="hover:text-white transition-colors">3 Years</Link></li>
+                <li><Link to="/collection?size=4yrs" className="hover:text-white transition-colors">4 Years</Link></li>
+                <li><Link to="/collection?size=5yrs" className="hover:text-white transition-colors">5 Years</Link></li>
               </ul>
             </div>
 

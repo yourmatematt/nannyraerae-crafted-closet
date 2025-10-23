@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
+import { useCart } from "@/contexts/CartContext";
+import { cn } from "@/lib/utils";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
@@ -33,6 +35,7 @@ interface Product {
 
 const Gifts = () => {
   const navigate = useNavigate();
+  const { items } = useCart();
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedPriceRange, setSelectedPriceRange] = useState('0-50')
@@ -282,13 +285,16 @@ const Gifts = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn(
+      "min-h-screen bg-gray-50",
+      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+    )}>
       <Navigation />
       
       {/* Page Header */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Gift Ideas</h1>
+          <h1 className="text-4xl font-bold mb-4" style={{ color: '#A38C71' }}>Gift Ideas</h1>
           <p className="text-lg text-gray-600 mb-10">
             Perfect presents for the special little ones in your life
           </p>
@@ -380,7 +386,7 @@ const Gifts = () => {
       {/* Shop by Budget */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-8">
+          <h2 className="text-4xl font-bold text-center mb-8" style={{ color: '#A38C71' }}>
             Shop By Budget
           </h2>
 
@@ -457,7 +463,7 @@ const Gifts = () => {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-playfair text-3xl font-bold text-foreground mb-4">
+            <h2 className="font-playfair text-3xl font-bold mb-4" style={{ color: '#A38C71' }}>
               Curated Gift Sets
             </h2>
             <p className="font-inter text-lg text-muted-foreground">

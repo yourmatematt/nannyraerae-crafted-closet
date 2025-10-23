@@ -1,323 +1,689 @@
-import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
+import { NewsletterModal } from "@/components/NewsletterModal";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import { Package } from "lucide-react";
+import { cn } from "@/lib/utils";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
-import heroImage from "@/assets/hero-image.jpg";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image_url?: string;
+  created_at: string;
+  product_type?: string;
+  age_group?: string;
+  gender?: string;
+  collection?: string;
+  badge?: string;
+  stock?: number;
+}
 
 const Collections = () => {
-  const navigate = useNavigate();
-  const { data: totalProducts = 0, isLoading: isLoadingTotal } = useQuery({
-    queryKey: ['totalProducts'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
+  const { addToCart, items } = useCart();
+  const [searchParams] = useSearchParams();
+  const [showNewsletterModal, setShowNewsletterModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState("all");
+  const [selectedGender, setSelectedGender] = useState("all");
+  const [selectedPriceRange, setSelectedPriceRange] = useState("all");
+  const [selectedSortBy, setSelectedSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [soldCurrentPage, setSoldCurrentPage] = useState(1);
+  const [allSoldProducts, setAllSoldProducts] = useState<Product[]>([]);
 
+  // Category options matching the admin dashboard product upload form
+  const categories = [
+    "Dress",
+    "Jacket",
+    "Overalls",
+    "Pants",
+    "Romper",
+    "Sets",
+    "Shirts",
+    "Shorts",
+    "Top"
+  ];
+
+  const PRODUCTS_PER_PAGE = 12;
+
+  // Reset pagination and products when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+    setAllProducts([]);
+    setSoldCurrentPage(1);
+    setAllSoldProducts([]);
+  }, [selectedCategory, selectedAgeGroup, selectedGender, selectedPriceRange, selectedSortBy]);
+
+  // Handle URL search parameters on component mount
+  useEffect(() => {
+    const sizeParam = searchParams.get('size');
+    if (sizeParam) {
+      // Valid size values that match our age group options
+      const validSizes = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'];
+      if (validSizes.includes(sizeParam)) {
+        setSelectedAgeGroup(sizeParam);
+      }
+    }
+  }, [searchParams]);
+
+
+  const { data: newProducts = [], isLoading, refetch } = useQuery({
+    queryKey: ['allProducts', selectedCategory, selectedAgeGroup, selectedGender, selectedPriceRange, selectedSortBy, currentPage],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .eq('stock', 1);
+
+      // Apply category filter
+      if (selectedCategory !== 'all') {
+        query = query.eq('product_type', selectedCategory);
+      }
+
+      // Apply age group filter
+      if (selectedAgeGroup !== 'all') {
+        query = query.eq('age_group', selectedAgeGroup);
+      }
+
+      // Apply gender filter
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
+      }
+
+      // Apply price range filter
+      if (selectedPriceRange === 'under50') {
+        query = query.lt('price', 50);
+      } else if (selectedPriceRange === '50-100') {
+        query = query.gte('price', 50).lt('price', 100);
+      } else if (selectedPriceRange === '100-150') {
+        query = query.gte('price', 100).lt('price', 150);
+      } else if (selectedPriceRange === '150plus') {
+        query = query.gte('price', 150);
+      }
+
+      // Apply sorting
+      if (selectedSortBy === 'newest') {
+        query = query.order('created_at', { ascending: false });
+      } else if (selectedSortBy === 'oldest') {
+        query = query.order('created_at', { ascending: true });
+      } else if (selectedSortBy === 'price-low') {
+        query = query.order('price', { ascending: true });
+      } else if (selectedSortBy === 'price-high') {
+        query = query.order('price', { ascending: false });
+      }
+
+      // Apply pagination
+      const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
+      query = query.range(offset, offset + PRODUCTS_PER_PAGE - 1);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        return [
+          {
+            id: 1,
+            name: "Garden Party Dress",
+            price: 89,
+            image_url: null,
+            created_at: new Date().toISOString(),
+            product_type: "Dress",
+            age_group: "2yrs",
+            gender: "Girls",
+            collection: "Garden Party",
+            stock: 1
+          },
+          {
+            id: 2,
+            name: "Coastal Dreams Romper",
+            price: 65,
+            image_url: null,
+            created_at: new Date().toISOString(),
+            product_type: "Romper",
+            age_group: "1yr",
+            gender: "Gender Neutral",
+            collection: "Coastal Dreams",
+            stock: 1
+          },
+          {
+            id: 3,
+            name: "Modern Vintage Pants",
+            price: 75,
+            image_url: null,
+            created_at: new Date().toISOString(),
+            product_type: "Pants",
+            age_group: "3yrs",
+            gender: "Boys",
+            collection: "Modern Vintage",
+            stock: 1
+          }
+        ];
+      }
+
+      return data as Product[];
+    }
+  });
+
+  // Accumulate products when new data arrives
+  useEffect(() => {
+    if (newProducts.length > 0) {
+      if (currentPage === 1) {
+        // First page - replace all products
+        setAllProducts(newProducts);
+      } else {
+        // Additional pages - append to existing products
+        setAllProducts(prev => [...prev, ...newProducts]);
+      }
+    }
+  }, [newProducts, currentPage]);
+
+  // Get total count for Load More functionality
+  const { data: totalCount = 0 } = useQuery({
+    queryKey: ['productCount', selectedCategory, selectedAgeGroup, selectedGender, selectedPriceRange],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .eq('stock', 1);
+
+      // Apply same filters as main query
+      if (selectedCategory !== 'all') {
+        query = query.eq('product_type', selectedCategory);
+      }
+      if (selectedAgeGroup !== 'all') {
+        query = query.eq('age_group', selectedAgeGroup);
+      }
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
+      }
+      if (selectedPriceRange === 'under50') {
+        query = query.lt('price', 50);
+      } else if (selectedPriceRange === '50-100') {
+        query = query.gte('price', 50).lt('price', 100);
+      } else if (selectedPriceRange === '100-150') {
+        query = query.gte('price', 100).lt('price', 150);
+      } else if (selectedPriceRange === '150plus') {
+        query = query.gte('price', 150);
+      }
+
+      const { count, error } = await query;
       if (error) {
         console.error('Error fetching product count:', error);
-        return 55; // fallback count
+        return 0;
       }
-
-      return count || 55;
+      return count || 0;
     }
   });
 
-  const { data: collectionCounts = {}, isLoading: isLoadingCounts } = useQuery({
-    queryKey: ['collectionCounts'],
+  const getProductImage = (product: Product) => {
+    if (product.image_url) return product.image_url;
+    const images = [productDress, productRomper, productPants];
+    return images[product.id % images.length];
+  };
+
+  // Get sold/out of stock products for Previous Pieces section
+  const { data: newSoldProducts = [], isLoading: isLoadingSold } = useQuery({
+    queryKey: ['soldProducts', selectedCategory, selectedAgeGroup, selectedGender, selectedPriceRange, selectedSortBy, soldCurrentPage],
     queryFn: async () => {
-      // Try to get counts by collection
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
-        .select('collection')
-        .not('collection', 'is', null);
+        .select('*')
+        .eq('is_active', true)
+        .eq('stock', 0);
+
+      // Apply same filters as main query
+      if (selectedCategory !== 'all') {
+        query = query.eq('product_type', selectedCategory);
+      }
+      if (selectedAgeGroup !== 'all') {
+        query = query.eq('age_group', selectedAgeGroup);
+      }
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
+      }
+      if (selectedPriceRange === 'under50') {
+        query = query.lt('price', 50);
+      } else if (selectedPriceRange === '50-100') {
+        query = query.gte('price', 50).lt('price', 100);
+      } else if (selectedPriceRange === '100-150') {
+        query = query.gte('price', 100).lt('price', 150);
+      } else if (selectedPriceRange === '150plus') {
+        query = query.gte('price', 150);
+      }
+
+      // Apply sorting
+      if (selectedSortBy === 'newest') {
+        query = query.order('created_at', { ascending: false });
+      } else if (selectedSortBy === 'oldest') {
+        query = query.order('created_at', { ascending: true });
+      } else if (selectedSortBy === 'price-low') {
+        query = query.order('price', { ascending: true });
+      } else if (selectedSortBy === 'price-high') {
+        query = query.order('price', { ascending: false });
+      }
+
+      // Apply pagination
+      const offset = (soldCurrentPage - 1) * PRODUCTS_PER_PAGE;
+      query = query.range(offset, offset + PRODUCTS_PER_PAGE - 1);
+
+      const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching collection counts:', error);
-        return {
-          'garden-party': 12,
-          'modern-vintage': 15,
-          'rainbow-bright': 18,
-          'coastal-dreams': 10
-        };
+        console.error('Error fetching sold products:', error);
+        return [
+          {
+            id: 101,
+            name: "Vintage Rose Dress",
+            price: 95,
+            image_url: null,
+            created_at: new Date().toISOString(),
+            product_type: "Dress",
+            age_group: "2yrs",
+            gender: "Girls",
+            stock: 0
+          },
+          {
+            id: 102,
+            name: "Garden Party Romper",
+            price: 78,
+            image_url: null,
+            created_at: new Date().toISOString(),
+            product_type: "Romper",
+            age_group: "1yr",
+            gender: "Gender Neutral",
+            stock: 0
+          }
+        ];
       }
 
-      // Count products by collection
-      const counts: Record<string, number> = {};
-      data.forEach(product => {
-        if (product.collection) {
-          counts[product.collection] = (counts[product.collection] || 0) + 1;
-        }
-      });
-
-      // Add fallback counts for empty collections
-      return {
-        'garden-party': counts['garden-party'] || 3,
-        'modern-vintage': counts['modern-vintage'] || 4,
-        'rainbow-bright': counts['rainbow-bright'] || 5,
-        'coastal-dreams': counts['coastal-dreams'] || 2,
-        'spring-awakening': counts['spring-awakening'] || 6,
-        'summer-adventures': counts['summer-adventures'] || 8,
-        ...counts
-      };
+      return data as Product[];
     }
   });
-  const signatureCollections = [
-    {
-      name: "Garden Party",
-      slug: "garden-party",
-      description: "Floral and nature-inspired pieces that celebrate the beauty of the outdoors",
-      image: productDress,
-      itemCount: collectionCounts['garden-party'] || 0
-    },
-    {
-      name: "Modern Vintage",
-      slug: "modern-vintage",
-      description: "Classic styles with a contemporary twist for timeless appeal",
-      image: productRomper,
-      itemCount: collectionCounts['modern-vintage'] || 0
-    },
-    {
-      name: "Rainbow Bright",
-      slug: "rainbow-bright",
-      description: "Bold, colorful designs that spark joy and imagination",
-      image: productPants,
-      itemCount: collectionCounts['rainbow-bright'] || 0
-    },
-    {
-      name: "Coastal Dreams",
-      slug: "coastal-dreams",
-      description: "Beach and ocean inspired pieces for little water lovers",
-      image: heroImage,
-      itemCount: collectionCounts['coastal-dreams'] || 0
-    }
-  ];
 
-  const seasonalCollections = [
-    {
-      name: "Spring Awakening",
-      slug: "spring-awakening",
-      description: "Fresh colors and light fabrics for the season of growth",
-      image: productRomper,
-      itemCount: collectionCounts['spring-awakening'] || 0,
-      isCurrent: true
-    },
-    {
-      name: "Summer Adventures",
-      slug: "summer-adventures",
-      description: "Breezy styles perfect for warm weather fun",
-      image: productPants,
-      itemCount: collectionCounts['summer-adventures'] || 0,
-      isCurrent: false
+  // Accumulate sold products when new data arrives
+  useEffect(() => {
+    if (newSoldProducts.length > 0) {
+      if (soldCurrentPage === 1) {
+        // First page - replace all sold products
+        setAllSoldProducts(newSoldProducts);
+      } else {
+        // Additional pages - append to existing sold products
+        setAllSoldProducts(prev => [...prev, ...newSoldProducts]);
+      }
     }
-  ];
+  }, [newSoldProducts, soldCurrentPage]);
 
-  const specialCollections = [
-    {
-      name: "Coordinating Siblings",
-      slug: "coordinating-siblings",
-      description: "Matching sets and complementary pieces for brothers and sisters",
-      image: productDress,
-      itemCount: collectionCounts['coordinating-siblings'] || Math.floor(totalProducts * 0.1)
-    },
-    {
-      name: "First Wardrobe",
-      slug: "first-wardrobe",
-      description: "Essential pieces for baby's first months",
-      image: productRomper,
-      itemCount: collectionCounts['first-wardrobe'] || Math.floor(totalProducts * 0.2)
-    },
-    {
-      name: "Special Occasions",
-      slug: "special-occasions",
-      description: "Party and formal wear for life's memorable moments",
-      image: heroImage,
-      itemCount: collectionCounts['special-occasions'] || Math.floor(totalProducts * 0.15)
-    },
-    {
-      name: "Eco-Conscious",
-      slug: "eco-conscious",
-      description: "Sustainable fabric choices for environmentally aware families",
-      image: productPants,
-      itemCount: collectionCounts['eco-conscious'] || Math.floor(totalProducts * 0.12)
+  // Get total count of sold products for Load More functionality
+  const { data: soldTotalCount = 0 } = useQuery({
+    queryKey: ['soldProductCount', selectedCategory, selectedAgeGroup, selectedGender, selectedPriceRange],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .eq('stock', 0);
+
+      // Apply same filters as sold products query
+      if (selectedCategory !== 'all') {
+        query = query.eq('product_type', selectedCategory);
+      }
+      if (selectedAgeGroup !== 'all') {
+        query = query.eq('age_group', selectedAgeGroup);
+      }
+      if (selectedGender !== 'all') {
+        query = query.eq('gender', selectedGender);
+      }
+      if (selectedPriceRange === 'under50') {
+        query = query.lt('price', 50);
+      } else if (selectedPriceRange === '50-100') {
+        query = query.gte('price', 50).lt('price', 100);
+      } else if (selectedPriceRange === '100-150') {
+        query = query.gte('price', 100).lt('price', 150);
+      } else if (selectedPriceRange === '150plus') {
+        query = query.gte('price', 150);
+      }
+
+      const { count, error } = await query;
+      if (error) {
+        console.error('Error fetching sold product count:', error);
+        return 0;
+      }
+      return count || 0;
     }
-  ];
+  });
 
-  const isLoading = isLoadingTotal || isLoadingCounts;
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      productId: product.id.toString(),
+      name: product.name,
+      price: product.price,
+      imageUrl: getProductImage(product),
+    });
+    toast.success(`${product.name} added to cart!`);
+  };
+
+  // Reset all filters
+  const resetFilters = useCallback(() => {
+    setSelectedCategory('all');
+    setSelectedAgeGroup('all');
+    setSelectedGender('all');
+    setSelectedPriceRange('all');
+    setSelectedSortBy('newest');
+    setCurrentPage(1);
+  }, []);
+
+  const loadMore = () => {
+    setCurrentPage(prev => prev + 1);
+  };
+
+  const loadMoreSold = () => {
+    setSoldCurrentPage(prev => prev + 1);
+  };
+
+  const hasMoreProducts = allProducts.length < totalCount;
+  const hasMoreSoldProducts = allSoldProducts.length < soldTotalCount;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn(
+      "min-h-screen bg-gray-50",
+      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+    )}>
       <Navigation />
-      
+
       {/* Page Header */}
-      <section className="py-12">
+      <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Nanny Rae Rae's Collection</h1>
-          <p className="text-lg text-gray-600 mb-10">
-            Each collection tells a story through fabric and design
-          </p>
+          <div className="text-center">
+            <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#A38C71' }}>
+              Collection
+            </h1>
+            <p className="font-inter text-xl mb-4 text-muted-foreground">
+              Discover our complete range of handcrafted children's clothing
+            </p>
+            <p className="font-inter text-lg text-muted-foreground">
+              Each piece lovingly crafted with attention to detail and comfort
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Collections Grid */}
-      <section className="py-8">
+      {/* Filters Section */}
+      <section className="py-6 bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Filter Controls */}
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <div className="flex flex-wrap gap-4">
+              {/* Category Filter */}
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Age Group Filter */}
+              <Select value={selectedAgeGroup} onValueChange={setSelectedAgeGroup}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Age Group" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ages</SelectItem>
+                  <SelectItem value="3mths">3 months</SelectItem>
+                  <SelectItem value="6mths">6 months</SelectItem>
+                  <SelectItem value="9mths">9 months</SelectItem>
+                  <SelectItem value="1yr">1 year</SelectItem>
+                  <SelectItem value="2yrs">2 years</SelectItem>
+                  <SelectItem value="3yrs">3 years</SelectItem>
+                  <SelectItem value="4yrs">4 years</SelectItem>
+                  <SelectItem value="5yrs">5 years</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Gender Filter */}
+              <Select value={selectedGender} onValueChange={setSelectedGender}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Genders</SelectItem>
+                  <SelectItem value="Boys">Boys</SelectItem>
+                  <SelectItem value="Girls">Girls</SelectItem>
+                  <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Price Range Filter */}
+              <Select value={selectedPriceRange} onValueChange={setSelectedPriceRange}>
+                <SelectTrigger className="w-36">
+                  <SelectValue placeholder="Price Range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Prices</SelectItem>
+                  <SelectItem value="under50">Under $50</SelectItem>
+                  <SelectItem value="50-100">$50 - $100</SelectItem>
+                  <SelectItem value="100-150">$100 - $150</SelectItem>
+                  <SelectItem value="150plus">Over $150</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Sort Filter */}
+              <Select value={selectedSortBy} onValueChange={setSelectedSortBy}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Sort By" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="oldest">Oldest</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Results Count and Reset */}
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">{totalCount}</span> products found
+              </div>
+              <Button variant="outline" size="sm" onClick={resetFilters}>
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Products Grid */}
+      <section className="pt-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="animate-pulse bg-card rounded-2xl overflow-hidden shadow-soft">
-                  <div className="aspect-[4/3] bg-muted"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-[3/4] bg-gray-200 rounded-xl mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-6 bg-gray-200 rounded w-20"></div>
                 </div>
               ))}
             </div>
+          ) : allProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No products found
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Try adjusting your filters or search terms to find what you're looking for.
+              </p>
+              <Button onClick={resetFilters}>
+                Clear All Filters
+              </Button>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {signatureCollections.map((collection) => (
-              <Link 
-                key={collection.slug} 
-                to={`/collections/${collection.slug}`}
-                className="group block"
-              >
-                <div className="bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-large transition-all duration-300">
-                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-                    <img 
-                      src={collection.image} 
-                      alt={collection.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-6 left-6 right-6 text-white">
-                      <h3 className="font-playfair text-2xl font-bold mb-2">{collection.name}</h3>
-                      <p className="font-inter text-sm opacity-90 mb-3 line-clamp-2">{collection.description}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="font-inter text-sm">{collection.itemCount} pieces</span>
-                        <Button variant="secondary" size="sm">
-                          Shop Collection
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {allProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    ...product,
+                    badge: product.badge
+                  }}
+                />
+              ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* Seasonal Collections */}
-      <section className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
-            Seasonal Collections
-          </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {seasonalCollections.map((collection) => (
-              <Link 
-                key={collection.slug} 
-                to={`/collections/${collection.slug}`}
-                className="group block relative"
-              >
-                <div className="bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-large transition-all duration-300">
-                  {collection.isCurrent && (
-                    <div className="absolute top-4 right-4 z-10 bg-brand-coral text-white px-3 py-1 rounded-full text-sm font-semibold">
-                      Current Season
+      {/* Load More Button */}
+      {!isLoading && allProducts.length > 0 && hasMoreProducts && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <Button
+              onClick={loadMore}
+              size="lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Load More Products
+            </Button>
+            <p className="text-sm text-gray-600 mt-2">
+              Showing {allProducts.length} of {totalCount} products
+            </p>
+          </div>
+        </section>
+      )}
+
+      {/* Previous Pieces Section */}
+      {allSoldProducts.length > 0 && (
+        <>
+          {/* Visual Separator */}
+          <section className="py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="border-t border-gray-300 pt-8">
+                <div className="text-center">
+                  <div className="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full">
+                    <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+                    <span className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+                      Previous Collection
+                    </span>
+                    <span className="w-3 h-3 bg-gray-400 rounded-full ml-2"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Previous Pieces Grid */}
+          <section className="py-8 bg-gray-100">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4" style={{ color: '#A38C71' }}>Previous Pieces</h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Beautiful pieces that have found their forever homes. Each one was crafted with the same love and attention to detail.
+                </p>
+              </div>
+
+              {isLoadingSold && soldCurrentPage === 1 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="aspect-[3/4] bg-gray-300 rounded-xl mb-4"></div>
+                      <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                      <div className="h-6 bg-gray-300 rounded w-20"></div>
                     </div>
-                  )}
-                  <div className="aspect-[5/3] bg-muted relative overflow-hidden">
-                    <img 
-                      src={collection.image} 
-                      alt={collection.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent"></div>
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="p-8 text-white max-w-md">
-                        <h3 className="font-playfair text-3xl font-bold mb-3">{collection.name}</h3>
-                        <p className="font-inter mb-4 opacity-90">{collection.description}</p>
-                        <div className="flex items-center gap-4">
-                          <span className="font-inter text-sm">{collection.itemCount} pieces</span>
-                          <Button variant="secondary">
-                            Shop Now
-                          </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {allSoldProducts.map((product) => (
+                    <div key={product.id} className="relative group">
+                      {/* Sold Product Card with modified styling */}
+                      <div className="relative overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+                        {/* Product Image with overlay */}
+                        <div className="aspect-[3/4] relative overflow-hidden bg-gray-100">
+                          <img
+                            src={getProductImage(product)}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Sold Pill */}
+                          <div className="absolute top-3 right-3">
+                            <div className="bg-white bg-opacity-95 px-3 py-1 rounded-full">
+                              <span className="text-gray-800 font-semibold text-xs uppercase tracking-wide">
+                                Sold
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="p-4">
+                          <h3 className="font-medium text-gray-700 mb-1 line-clamp-2">
+                            {product.name}
+                          </h3>
+                          <p className="text-lg font-semibold text-gray-500">
+                            ${product.price}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            This piece has been sold
+                          </p>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+              )}
 
-      {/* Special Collections */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
-            Special Collections
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {specialCollections.map((collection) => (
-              <Link 
-                key={collection.slug} 
-                to={`/collections/${collection.slug}`}
-                className="group block"
-              >
-                <div className="bg-card rounded-xl overflow-hidden shadow-soft hover:shadow-medium transition-all duration-200">
-                  <div className="aspect-[3/4] bg-muted overflow-hidden">
-                    <img 
-                      src={collection.image} 
-                      alt={collection.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-inter font-semibold text-foreground mb-2">{collection.name}</h3>
-                    <p className="font-inter text-sm text-muted-foreground mb-3 line-clamp-2">
-                      {collection.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="font-inter text-xs text-muted-foreground">
-                        {collection.itemCount} pieces
-                      </span>
-                      <Button variant="outline" size="sm">
-                        Explore
-                      </Button>
-                    </div>
-                  </div>
+              {/* Load More Button for Sold Products */}
+              {!isLoadingSold && allSoldProducts.length > 0 && hasMoreSoldProducts && (
+                <div className="text-center mt-8">
+                  <Button
+                    onClick={loadMoreSold}
+                    size="lg"
+                    variant="outline"
+                    className="border-gray-400 text-gray-700 hover:bg-gray-50"
+                  >
+                    Load More Previous Pieces
+                  </Button>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing {allSoldProducts.length} of {soldTotalCount} previous pieces
+                  </p>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-primary">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-playfair text-3xl font-bold text-primary-foreground mb-6">
-            Can't Find What You're Looking For?
-          </h2>
-          <p className="font-inter text-lg text-primary-foreground/90 mb-8">
-            Every piece is made with love and attention to detail. Browse all our creations or get in touch for something special.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="secondary" size="lg" onClick={() => navigate('/new-arrivals')}>
-              View All Products
-            </Button>
-            <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/gifts')}>
-              Browse Gift Ideas
-            </Button>
-          </div>
-        </div>
-      </section>
+              )}
+            </div>
+          </section>
+        </>
+      )}
 
       <Footer />
+
+      <NewsletterModal
+        open={showNewsletterModal}
+        onClose={() => setShowNewsletterModal(false)}
+        onSubscribeSuccess={() => setShowNewsletterModal(false)}
+      />
     </div>
   );
 };

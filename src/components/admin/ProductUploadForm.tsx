@@ -304,10 +304,8 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Accessories">Accessories</SelectItem>
                       <SelectItem value="Dress">Dress</SelectItem>
                       <SelectItem value="Jacket">Jacket</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
                       <SelectItem value="Overalls">Overalls</SelectItem>
                       <SelectItem value="Pants">Pants</SelectItem>
                       <SelectItem value="Romper">Romper</SelectItem>

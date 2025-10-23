@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { ArrowLeft, ShoppingCart, Package, Heart, Star, Award, Shield, Truck, RefreshCw, RotateCcw, Shirt, Sparkles } from 'lucide-react'
 import { ProductCard } from '@/components/ProductCard'
 import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 
 interface Product {
   id: string
@@ -35,7 +36,7 @@ interface Product {
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { addToCart } = useCart()
+  const { addToCart, items } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -180,7 +181,10 @@ export default function ProductDetail() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-gray-50">
+      <div className={cn(
+        "min-h-screen bg-gray-50",
+        items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+      )}>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
@@ -258,42 +262,13 @@ export default function ProductDetail() {
                 )}
               </Button>
 
-              {/* Trust badges with improved design */}
-              <div className="my-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Free Shipping */}
-                <div className="flex flex-col items-center text-center p-6 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="w-12 h-12 mb-3 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Truck className="w-6 h-6 text-primary" />
-                  </div>
-                  <h4 className="font-semibold text-foreground mb-1">Free Shipping</h4>
-                  <p className="text-sm text-muted-foreground">On orders over $100</p>
-                </div>
-
-                {/* Secure Payment */}
-                <div className="flex flex-col items-center text-center p-6 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="w-12 h-12 mb-3 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Shield className="w-6 h-6 text-primary" />
-                  </div>
-                  <h4 className="font-semibold text-foreground mb-1">Secure Payment</h4>
-                  <p className="text-sm text-muted-foreground">Safe & encrypted</p>
-                </div>
-
-                {/* 30-Day Returns */}
-                <div className="flex flex-col items-center text-center p-6 bg-primary/5 rounded-lg border border-primary/20">
-                  <div className="w-12 h-12 mb-3 bg-primary/10 rounded-full flex items-center justify-center">
-                    <RotateCcw className="w-6 h-6 text-primary" />
-                  </div>
-                  <h4 className="font-semibold text-foreground mb-1">Easy Returns</h4>
-                  <p className="text-sm text-muted-foreground">30-day guarantee</p>
-                </div>
-              </div>
 
               {/* Additional product details */}
               <div className="mt-6 space-y-4 border-t pt-6">
                 <div className="flex items-start gap-3">
                   <Shirt className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-sm mb-1">One-of-a-Kind</h4>
+                    <h4 className="font-semibold text-sm mb-1">Unique Pieces</h4>
                     <p className="text-sm text-muted-foreground">This item is handmade and unique. No two pieces are exactly alike.</p>
                   </div>
                 </div>
@@ -302,7 +277,7 @@ export default function ProductDetail() {
                   <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-sm mb-1">Quality Fabrics</h4>
-                    <p className="text-sm text-muted-foreground">Made from premium cotton and natural materials for comfort and durability.</p>
+                    <p className="text-sm text-muted-foreground">Made from premium quality materials for comfort and durability.</p>
                   </div>
                 </div>
 
@@ -310,7 +285,7 @@ export default function ProductDetail() {
                   <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-sm mb-1">Handmade in Australia</h4>
-                    <p className="text-sm text-muted-foreground">Lovingly crafted by Rae in regional Australia with years of experience.</p>
+                    <p className="text-sm text-muted-foreground">Lovingly crafted by Nanny Rae in regional Australia with years of experience.</p>
                   </div>
                 </div>
               </div>
@@ -397,12 +372,10 @@ export default function ProductDetail() {
 
 // Product Info Tabs Component
 function ProductInfoTabs({ product }: { product: Product | null }) {
-  const [activeTab, setActiveTab] = useState('story')
+  const [activeTab, setActiveTab] = useState('care')
 
   const tabs = [
-    { id: 'story', label: 'The Story' },
     { id: 'care', label: 'Care' },
-    { id: 'details', label: 'Sizing Guide' },
     { id: 'returns', label: 'Returns' }
   ]
 
@@ -429,89 +402,7 @@ function ProductInfoTabs({ product }: { product: Product | null }) {
 
       {/* Tab Content */}
       <div className="py-4 min-h-[200px]">
-        {activeTab === 'details' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-sm font-medium mb-3">Sizing Guide</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 rounded-lg text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-sm">
-                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-sm">Age</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-sm">Height (cm)</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-sm">Chest (cm)</th>
-                      <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-sm">Waist (cm)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">3mths</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">56-62</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">38-42</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">38-42</td>
-                    </tr>
-                    <tr className="bg-gray-50 text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">6mths</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">62-68</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">42-44</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">42-44</td>
-                    </tr>
-                    <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">9mths</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">68-74</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">44-46</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">44-46</td>
-                    </tr>
-                    <tr className="bg-gray-50 text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">1yr</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">74-80</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">46-48</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">46-48</td>
-                    </tr>
-                    <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">2yrs</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">80-92</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">48-51</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">48-51</td>
-                    </tr>
-                    <tr className="bg-gray-50 text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">3yrs</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">92-98</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">51-53</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">51-53</td>
-                    </tr>
-                    <tr className="text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">4yrs</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">98-104</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">53-55</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">53-55</td>
-                    </tr>
-                    <tr className="bg-gray-50 text-sm">
-                      <td className="border border-gray-300 px-4 py-2 text-sm">5yrs</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">104-110</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">55-57</td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm">55-57</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-sm text-muted-foreground mt-4">
-                <strong>Note:</strong> Each piece is handmade and may vary slightly. Contact us for specific measurements.
-              </p>
-            </div>
-          </div>
-        )}
 
-        {activeTab === 'story' && (
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium mb-3">The Story Behind This Piece</h3>
-            <div className="text-muted-foreground leading-relaxed text-sm">
-              <p>
-                Each piece from Nanny Rae Rae's collection is lovingly handcrafted in regional Australia with the care and attention that only comes from years of experience creating beautiful children's clothing. Rae's passion for creating unique, one-of-a-kind pieces means that no two items are exactly alike. Every stitch tells a story, every fabric choice is made with love, and every finished piece carries the warmth of a grandmother's touch. This particular piece showcases Rae's signature style - combining traditional craftsmanship with modern design elements that children love to wear and parents love to see. When you choose a Nanny Rae Rae piece, you're not just buying clothing - you're bringing home a piece of Australian handmade tradition that will create lasting memories for your little one.
-              </p>
-            </div>
-          </div>
-        )}
 
         {activeTab === 'care' && (
           <div className="space-y-6">

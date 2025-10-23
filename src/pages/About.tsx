@@ -2,9 +2,12 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
+import { cn } from "@/lib/utils";
 
 const About = () => {
   const navigate = useNavigate();
+  const { items } = useCart();
   const values = [
     {
       icon: "⭐",
@@ -71,7 +74,10 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={cn(
+      "min-h-screen bg-gray-50",
+      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+    )}>
       <Navigation />
       
       {/* Hero Section */}
@@ -94,7 +100,7 @@ const About = () => {
             </div>
             
             <div>
-              <h1 className="font-playfair text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#A38C71' }}>
                 Hello, I'm Nanny Rae Rae
               </h1>
               <p className="font-inter text-xl text-muted-foreground mb-8 leading-relaxed">
@@ -103,7 +109,7 @@ const About = () => {
               <p className="font-inter text-lg text-muted-foreground mb-6 leading-relaxed">
                 Welcome to my world of handmade children's fashion. Every piece that leaves my sewing room carries with it the love, care, and expertise I've developed over decades of creating beautiful clothes for the little ones I cherish most.
               </p>
-              <Button size="lg" className="font-inter font-semibold" onClick={() => navigate('/new-arrivals')}>
+              <Button size="lg" className="font-inter font-semibold" onClick={() => navigate('/collection')}>
                 Shop My Creations
               </Button>
             </div>
@@ -119,7 +125,7 @@ const About = () => {
           <div className="mb-20">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="order-2 lg:order-1">
-                <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">
+                <h2 className="font-playfair text-3xl font-bold mb-6" style={{ color: '#A38C71' }}>
                   It Started with Love
                 </h2>
                 <p className="font-inter text-lg text-muted-foreground mb-6 leading-relaxed">
@@ -152,7 +158,7 @@ const About = () => {
                 />
               </div>
               <div className="order-2">
-                <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">
+                <h2 className="font-playfair text-3xl font-bold mb-6" style={{ color: '#A38C71' }}>
                   Why Handmade Matters
                 </h2>
                 <p className="font-inter text-lg text-muted-foreground mb-6 leading-relaxed">
@@ -169,7 +175,7 @@ const About = () => {
           <div className="mb-20">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="order-2 lg:order-1">
-                <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">
+                <h2 className="font-playfair text-3xl font-bold mb-6" style={{ color: '#A38C71' }}>
                   Modern Meets Traditional
                 </h2>
                 <p className="font-inter text-lg text-muted-foreground mb-6 leading-relaxed">
@@ -202,7 +208,7 @@ const About = () => {
                 />
               </div>
               <div className="order-2">
-                <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">
+                <h2 className="font-playfair text-3xl font-bold mb-6" style={{ color: '#A38C71' }}>
                   The Business of Joy
                 </h2>
                 <p className="font-inter text-lg text-muted-foreground mb-6 leading-relaxed">
@@ -217,31 +223,12 @@ const About = () => {
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
-            What Guides Everything I Do
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {values.map((value, index) => (
-              <div key={index} className="text-center p-6 bg-card rounded-xl shadow-soft">
-                <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">{value.icon}</span>
-                </div>
-                <h3 className="font-inter font-semibold text-foreground mb-3">{value.title}</h3>
-                <p className="font-inter text-muted-foreground">{value.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Process Section */}
       <section className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-playfair text-3xl font-bold text-foreground mb-6">
+            <h2 className="font-playfair text-3xl font-bold mb-6" style={{ color: '#A38C71' }}>
               From Design to Delivery
             </h2>
             <p className="font-inter text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -266,7 +253,7 @@ const About = () => {
       {/* Testimonials */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-playfair text-3xl font-bold text-center text-foreground mb-12">
+          <h2 className="font-playfair text-3xl font-bold text-center mb-12" style={{ color: '#A38C71' }}>
             What Families Are Saying
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -308,8 +295,8 @@ const About = () => {
             <Button variant="secondary" size="lg" onClick={() => navigate('/new-arrivals')}>
               Shop New Arrivals
             </Button>
-            <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/collections')}>
-              View Collections
+            <Button variant="outline" size="lg" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" onClick={() => navigate('/collection')}>
+              View Collection
             </Button>
           </div>
         </div>

@@ -45,7 +45,7 @@ const FilterSection = memo(({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Back Button */}
       <Button asChild variant="ghost" className="mb-6">
-        <Link to="/collections">
+        <Link to="/collection">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to All Collections
         </Link>

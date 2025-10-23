@@ -6,10 +6,17 @@ import ValueProps from "@/components/ValueProps";
 import ProductShowcase from "@/components/ProductShowcase";
 import StorySection from "@/components/StorySection";
 import Footer from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
+  const { items } = useCart();
+
   return (
-    <div className="min-h-screen bg-gray-50 font-inter">
+    <div className={cn(
+      "min-h-screen bg-gray-50 font-inter",
+      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+    )}>
       <Navigation />
       <main>
         <HeroSection />

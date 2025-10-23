@@ -8,10 +8,13 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ScrollToTop from "./components/ScrollToTop";
 import { PageTransition } from "./components/PageTransition";
 import { TawkWidget } from "./components/TawkWidget";
+import { StripeProvider } from "./components/StripeProvider";
+import { ReservationManager } from "./components/ReservationManager";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewArrivals from "./pages/NewArrivals";
 import ShopByAge from "./pages/ShopByAge";
+import ShopByAgeOverview from "./pages/ShopByAgeOverview";
 import Collections from "./pages/Collections";
 import CollectionDetail from "./pages/CollectionDetail";
 import About from "./pages/About";
@@ -35,6 +38,7 @@ import EcoConscious from "./pages/collections/EcoConscious";
 import Cart from "./pages/Cart";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutCancel from "./pages/CheckoutCancel";
+import Checkout from "./pages/Checkout";
 import ProductDetail from "./pages/ProductDetail";
 import AdminLogin from "./pages/admin/Login";
 import { AdminDashboard } from "./pages/admin/Dashboard";
@@ -49,20 +53,22 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <TawkWidget />
-            <PageTransition>
+      <StripeProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <TawkWidget />
+              <ReservationManager />
+              <PageTransition>
               <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/new-arrivals" element={<NewArrivals />} />
-              {/* Shop by Age route - DISABLED */}
-              {/* <Route path="/shop/age/:ageGroup" element={<ShopByAge />} /> */}
-              <Route path="/collections" element={<Collections />} />
+              <Route path="/shop-by-age" element={<ShopByAgeOverview />} />
+              <Route path="/shop/age/:ageGroup" element={<ShopByAge />} />
+              <Route path="/collection" element={<Collections />} />
               <Route path="/collections/:collectionName" element={<CollectionDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/gifts" element={<Gifts />} />
@@ -89,6 +95,7 @@ const App = () => (
 
               <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/checkout/cancel" element={<CheckoutCancel />} />
 
@@ -127,6 +134,7 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </CartProvider>
+    </StripeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
