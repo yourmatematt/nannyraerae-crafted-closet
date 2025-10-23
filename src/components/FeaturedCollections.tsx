@@ -82,7 +82,7 @@ const FeaturedCollections = () => {
   return (
     <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="text-center mb-12">
-        <h2 className="font-playfair text-3xl lg:text-4xl font-bold mb-4" style={{ color: '#A38C71' }}>
+        <h2 className="font-playfair text-3xl lg:text-4xl font-bold mb-4" style={{ color: '#8E5A3B' }}>
           Discover Our Collections
         </h2>
         <p className="font-inter text-lg text-muted-foreground max-w-2xl mx-auto">

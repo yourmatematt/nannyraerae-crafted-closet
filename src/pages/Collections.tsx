@@ -409,7 +409,7 @@ const Collections = () => {
       <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#A38C71' }}>
+            <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#8E5A3B' }}>
               Collection
             </h1>
             <p className="font-inter text-xl mb-4 text-muted-foreground">

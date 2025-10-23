@@ -27,7 +27,7 @@ const StorySection = () => {
 
           {/* Content Side */}
           <div>
-            <h2 className="font-playfair text-3xl lg:text-4xl font-bold mb-6" style={{ color: '#A38C71' }}>
+            <h2 className="font-playfair text-3xl lg:text-4xl font-bold mb-6" style={{ color: '#8E5A3B' }}>
               From My Sewing Room to Your Family
             </h2>
             

@@ -23,7 +23,7 @@ const HeroSection = () => {
 
               {/* Large heading */}
               <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                <span style={{ color: '#A38C71' }}>Unique</span>
+                <span style={{ color: '#8E5A3B' }}>Unique</span>
                 <br />
                 <span className="text-primary">Children&apos;s Clothing</span>
               </h1>

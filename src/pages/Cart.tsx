@@ -44,7 +44,7 @@ const Cart = () => {
             <div className="w-24 h-24 mx-auto mb-8 bg-muted rounded-full flex items-center justify-center">
               <ShoppingBag className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h1 className="font-playfair text-3xl font-bold mb-4" style={{ color: '#A38C71' }}>
+            <h1 className="font-playfair text-3xl font-bold mb-4" style={{ color: '#8E5A3B' }}>
               Your cart is empty
             </h1>
             <p className="font-inter text-lg text-muted-foreground mb-8">
@@ -74,7 +74,7 @@ const Cart = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="font-playfair text-3xl lg:text-4xl font-bold mb-2" style={{ color: '#A38C71' }}>
+          <h1 className="font-playfair text-3xl lg:text-4xl font-bold mb-2" style={{ color: '#8E5A3B' }}>
             Shopping Cart
           </h1>
           <p className="font-inter text-muted-foreground">

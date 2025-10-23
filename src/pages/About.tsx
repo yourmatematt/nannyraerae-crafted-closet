@@ -100,7 +100,7 @@ const About = () => {
             </div>
             
             <div>
-              <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#A38C71' }}>
+              <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#8E5A3B' }}>
                 Hello, I'm Nanny Rae Rae
               </h1>
               <p className="font-inter text-xl text-muted-foreground mb-8 leading-relaxed">

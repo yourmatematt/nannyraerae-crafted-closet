@@ -73,7 +73,7 @@ const ShopByAgeOverview = () => {
       {/* Hero Section */}
       <section className="py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6" style={{ color: '#A38C71' }}>
+          <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6" style={{ color: '#8E5A3B' }}>
             Shop by Age
           </h1>
           <p className="font-inter text-lg lg:text-xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">

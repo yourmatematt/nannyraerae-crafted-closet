@@ -247,10 +247,7 @@ const Footer = () => {
                   <span className="w-2 h-2 rounded-full bg-[hsl(190_35%_55%)]"></span>
                   Secure Payments
                 </span>
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[hsl(278_35%_60%)]"></span>
-                  Free Shipping $100+
-                </span>
+                
               </div>
 
               <div className="flex gap-6 font-inter text-white/80 text-sm">

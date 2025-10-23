@@ -409,11 +409,11 @@ function ProductInfoTabs({ product }: { product: Product | null }) {
             <div>
               <h3 className="text-base font-medium mb-3">Care Instructions</h3>
               <div className="space-y-3 text-sm">
-                <p>• Machine wash cold (30°C) with similar colors</p>
-                <p>• Use gentle or delicate cycle to preserve fabric quality</p>
+                <p>• Cold machine wash with similar colors</p>
+              
                 <p>• Avoid bleach or harsh chemicals</p>
                 <p>• Tumble dry low or hang dry in shade</p>
-                <p>• Iron on low heat if needed, inside out</p>
+                <p>• Iron according to material type</p>
                 <p>• Store in a cool, dry place</p>
               </div>
             </div>

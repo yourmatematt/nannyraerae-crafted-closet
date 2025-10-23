@@ -294,7 +294,7 @@ const Gifts = () => {
       {/* Page Header */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-4" style={{ color: '#A38C71' }}>Gift Ideas</h1>
+          <h1 className="text-4xl font-bold mb-4" style={{ color: '#8E5A3B' }}>Gift Ideas</h1>
           <p className="text-lg text-gray-600 mb-10">
             Perfect presents for the special little ones in your life
           </p>
