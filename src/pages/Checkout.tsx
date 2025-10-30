@@ -161,26 +161,51 @@ const Checkout = () => {
 
   const createOrder = async (paymentIntentId: string) => {
     try {
+      // Split customer name into first and last name
+      const nameParts = customerDetails.name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // Prepare order data with correct column names and data types
+      const orderData = {
+        session_id: sessionId,
+        stripe_payment_intent_id: paymentIntentId,
+        customer_email: customerDetails.email,
+        customer_first_name: firstName,
+        customer_last_name: lastName,
+        customer_phone: customerDetails.phone,
+        shipping_address_line1: customerDetails.address.line1,
+        shipping_address_line2: customerDetails.address.line2 || null,
+        shipping_city: customerDetails.address.city,
+        shipping_state: customerDetails.address.state,
+        shipping_postcode: customerDetails.address.postalCode,
+        shipping_country: customerDetails.address.country,
+        subtotal: Number(orderSummary.subtotal.toFixed(2)),
+        gst: Number(orderSummary.tax.toFixed(2)),
+        shipping_cost: Number(orderSummary.shipping.toFixed(2)),
+        total: Number(orderSummary.total.toFixed(2)),
+        status: 'completed'
+      };
+
+      console.log('Creating order with data:', orderData);
+
       // Create order record
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .insert({
-          session_id: sessionId,
-          payment_intent_id: paymentIntentId,
-          customer_email: customerDetails.email,
-          customer_name: customerDetails.name,
-          customer_phone: customerDetails.phone,
-          shipping_address: customerDetails.address,
-          subtotal: orderSummary.subtotal,
-          shipping_cost: orderSummary.shipping,
-          tax_amount: orderSummary.tax,
-          total_amount: orderSummary.total,
-          status: 'completed'
-        })
+        .insert(orderData)
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Supabase order creation error:', {
+          error: orderError,
+          message: orderError.message,
+          details: orderError.details,
+          hint: orderError.hint,
+          code: orderError.code
+        });
+        throw orderError;
+      }
 
       // Create order items
       const orderItems = items.map(item => ({
@@ -264,8 +289,30 @@ const Checkout = () => {
       }
 
     } catch (error) {
-      console.error('Payment error:', error);
-      toast.error('Payment failed. Please try again.');
+      console.error('Checkout error:', {
+        error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        orderSummary,
+        customerDetails: {
+          ...customerDetails,
+          // Don't log sensitive address details in production
+          address: '[REDACTED]'
+        }
+      });
+
+      // More specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('payment')) {
+          toast.error('Payment failed. Please check your card details and try again.');
+        } else if (error.message.includes('order')) {
+          toast.error('Order creation failed. Please contact support if the issue persists.');
+        } else {
+          toast.error(`Checkout failed: ${error.message}`);
+        }
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsProcessing(false);
     }
