@@ -159,101 +159,8 @@ const Checkout = () => {
     }
   };
 
-  const createOrder = async (paymentIntentId: string) => {
-    try {
-      // Split customer name into first and last name
-      const nameParts = customerDetails.name.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
-      // Prepare order data with correct column names and data types
-      const orderData = {
-        session_id: sessionId,
-        stripe_payment_intent_id: paymentIntentId,
-        customer_email: customerDetails.email,
-        customer_first_name: firstName,
-        customer_last_name: lastName,
-        customer_phone: customerDetails.phone,
-        shipping_address_line1: customerDetails.address.line1,
-        shipping_address_line2: customerDetails.address.line2 || null,
-        shipping_city: customerDetails.address.city,
-        shipping_state: customerDetails.address.state,
-        shipping_postcode: customerDetails.address.postalCode,
-        shipping_country: customerDetails.address.country,
-        subtotal: Number(orderSummary.subtotal.toFixed(2)),
-        gst: Number(orderSummary.tax.toFixed(2)),
-        shipping_cost: Number(orderSummary.shipping.toFixed(2)),
-        total: Number(orderSummary.total.toFixed(2)),
-        status: 'completed'
-      };
-
-      // Before creating the order
-      console.log('=== ORDER DATA BEING SENT ===');
-      console.log('Order data:', JSON.stringify(orderData, null, 2));
-
-      // Create order record
-      const { data: orderResult, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select();
-
-      if (orderError) {
-        console.error('=== ORDER CREATION ERROR ===');
-        console.error('Error code:', orderError.code);
-        console.error('Error message:', orderError.message);
-        console.error('Error details:', orderError.details);
-        console.error('Error hint:', orderError.hint);
-        console.error('Full error:', JSON.stringify(orderError, null, 2));
-        throw orderError;
-      }
-
-      const order = orderResult[0]; // Get first result since we're not using .single()
-
-      // Create order items
-      const orderItems = items.map(item => ({
-        order_id: order.id,
-        product_id: item.productId,
-        product_name: item.name,
-        product_price: Number(item.price.toFixed(2)), // Changed from 'price' to 'product_price' and ensure it's numeric
-        product_image: item.imageUrl,
-        quantity: item.quantity || 1
-      }));
-
-      // Before creating order items
-      console.log('=== ORDER ITEMS DATA BEING SENT ===');
-      console.log('Order items:', JSON.stringify(orderItems, null, 2));
-
-      // Create order items
-      const { data: itemsResult, error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems)
-        .select();
-
-      if (itemsError) {
-        console.error('=== ORDER ITEMS ERROR ===');
-        console.error('Error code:', itemsError.code);
-        console.error('Error message:', itemsError.message);
-        console.error('Error details:', itemsError.details);
-        console.error('Error hint:', itemsError.hint);
-        console.error('Full error:', JSON.stringify(itemsError, null, 2));
-        throw itemsError;
-      }
-
-      // Mark reservations as completed (rather than releasing them)
-      for (const item of items) {
-        await supabase
-          .from('cart_reservations')
-          .update({ is_expired: true })
-          .eq('session_id', sessionId)
-          .eq('product_id', item.productId);
-      }
-
-      return order;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw new Error('Failed to create order');
-    }
-  };
+  // Note: Order creation is now handled by the Stripe webhook after successful payment
+  // This ensures orders are only created for successful payments
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -293,15 +200,16 @@ const Checkout = () => {
       }
 
       if (paymentIntent?.status === 'succeeded') {
-        // Create order in database
-        const order = await createOrder(paymentIntent.id);
+        console.log('Payment succeeded! Payment Intent ID:', paymentIntent.id);
 
         // Clear cart
         await clearCart();
 
-        // Success
-        toast.success('Payment successful! Redirecting to confirmation...');
-        navigate(`/order-confirmation/${order.id}`);
+        // Success - Note: Order will be created by webhook
+        toast.success('Payment successful! Your order is being processed...');
+
+        // Redirect to a processing page that will check for order completion
+        navigate(`/checkout/success?payment_intent=${paymentIntent.id}&session=${sessionId}`);
       }
 
     } catch (error) {

@@ -40,6 +40,7 @@ import Cart from "./pages/Cart";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import CheckoutCancel from "./pages/CheckoutCancel";
 import Checkout from "./pages/Checkout";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import ProductDetail from "./pages/ProductDetail";
 import AdminLogin from "./pages/admin/Login";
 import { AdminDashboard } from "./pages/admin/Dashboard";
@@ -100,6 +101,7 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+              <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
 
               {/* Admin Routes */}
               <Route path="/admin/login" element={<AdminLogin />} />
