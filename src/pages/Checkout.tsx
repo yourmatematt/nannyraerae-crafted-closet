@@ -211,10 +211,10 @@ const Checkout = () => {
       const orderItems = items.map(item => ({
         order_id: order.id,
         product_id: item.productId,
-        quantity: item.quantity,
-        price: item.price,
         product_name: item.name,
-        product_image: item.imageUrl
+        product_price: Number(item.price.toFixed(2)), // Changed from 'price' to 'product_price' and ensure it's numeric
+        product_image: item.imageUrl,
+        quantity: item.quantity || 1
       }));
 
       const { error: itemsError } = await supabase
