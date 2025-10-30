@@ -17,6 +17,7 @@ interface Product {
   name: string;
   price: number;
   image_url?: string;
+  description?: string;
   age_group?: string;
   sizes?: string[];
   badge?: string;
@@ -138,6 +139,7 @@ const ShopByAge = () => {
       name: product.name,
       price: product.price,
       imageUrl: getProductImage(product),
+      description: product.description || '',
     });
     toast.success(`${product.name} added to cart!`);
   };

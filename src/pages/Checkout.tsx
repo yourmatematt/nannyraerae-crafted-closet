@@ -10,9 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { releaseReservation } from '@/lib/reservations';
-import { Loader2, Lock, CreditCard, Truck, Shield } from 'lucide-react';
+import { Loader2, Lock, CreditCard, Truck, Shield, User } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/hooks/useAuth';
+import { LoginModal } from '@/components/auth/LoginModal';
 import { cn } from '@/lib/utils';
 
 interface CustomerDetails {
@@ -44,8 +46,10 @@ const Checkout = () => {
   const { items, clearCart, sessionId } = useCart();
   const stripe = useStripe();
   const elements = useElements();
+  const { user, signOut } = useAuth();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails>({
     email: '',
     name: '',
@@ -67,6 +71,18 @@ const Checkout = () => {
       navigate('/collection');
     }
   }, [items, navigate]);
+
+  // Autofill form when user is logged in
+  useEffect(() => {
+    if (user && user.email) {
+      setCustomerDetails(prev => ({
+        ...prev,
+        email: user.email || '',
+        name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+        phone: user.user_metadata?.phone || '',
+      }));
+    }
+  }, [user]);
 
   // Calculate order summary
   const calculateOrderSummary = (): OrderSummary => {
@@ -284,6 +300,50 @@ const Checkout = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Authentication Section */}
+                  {!user ? (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-3 mb-3">
+                        <User className="w-5 h-5 text-blue-600" />
+                        <p className="text-blue-900 font-medium">Returning customer? Sign in for faster checkout</p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsLoginModalOpen(true)}
+                          className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                        >
+                          Sign In
+                        </Button>
+                        <span className="text-sm text-blue-600 self-center">or continue as guest below</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <User className="w-5 h-5 text-green-600" />
+                          <div>
+                            <p className="text-green-900 font-medium">Logged in as {user.email}</p>
+                            <p className="text-sm text-green-700">Your information has been pre-filled below</p>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={signOut}
+                          className="text-green-700 hover:bg-green-100"
+                        >
+                          Sign Out
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <Separator />
+
                   {/* Customer Information */}
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Customer Information</h3>
@@ -512,6 +572,12 @@ const Checkout = () => {
       </div>
 
       <Footer />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 };

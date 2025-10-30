@@ -87,6 +87,7 @@ export default function ProductDetail() {
         name: product.name,
         price: product.price,
         imageUrl: product.image_url || '',
+        description: product.description || '',
       })
 
       // Success message is now handled in CartContext

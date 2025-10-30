@@ -21,6 +21,7 @@ interface Product {
   name: string;
   price: number;
   image_url?: string;
+  description?: string;
   created_at: string;
   product_type?: string;
   age_group?: string;
@@ -373,6 +374,7 @@ const Collections = () => {
       name: product.name,
       price: product.price,
       imageUrl: getProductImage(product),
+      description: product.description || '',
     });
     toast.success(`${product.name} added to cart!`);
   };
@@ -676,6 +678,9 @@ const Collections = () => {
           </section>
         </>
       )}
+
+      {/* Spacing before footer */}
+      <div className="py-8"></div>
 
       <Footer />
 

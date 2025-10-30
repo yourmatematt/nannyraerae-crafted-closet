@@ -84,49 +84,49 @@ const Navigation = () => {
                 <div className="absolute top-full left-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-medium opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                   <div className="p-2">
                     <Link
-                      to="/new-arrivals?size=3mths"
+                      to="/collection?size=3mths"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       3 Months
                     </Link>
                     <Link
-                      to="/new-arrivals?size=6mths"
+                      to="/collection?size=6mths"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       6 Months
                     </Link>
                     <Link
-                      to="/new-arrivals?size=9mths"
+                      to="/collection?size=9mths"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       9 Months
                     </Link>
                     <Link
-                      to="/new-arrivals?size=1yr"
+                      to="/collection?size=1yr"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       1 Year
                     </Link>
                     <Link
-                      to="/new-arrivals?size=2yrs"
+                      to="/collection?size=2yrs"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       2 Years
                     </Link>
                     <Link
-                      to="/new-arrivals?size=3yrs"
+                      to="/collection?size=3yrs"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       3 Years
                     </Link>
                     <Link
-                      to="/new-arrivals?size=4yrs"
+                      to="/collection?size=4yrs"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       4 Years
                     </Link>
                     <Link
-                      to="/new-arrivals?size=5yrs"
+                      to="/collection?size=5yrs"
                       className="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-muted rounded-md"
                     >
                       5 Years

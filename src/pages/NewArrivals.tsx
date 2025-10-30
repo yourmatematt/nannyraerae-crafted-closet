@@ -21,6 +21,7 @@ interface Product {
   name: string;
   price: number;
   image_url?: string;
+  description?: string;
   created_at: string;
   badge?: string;
   stock_quantity?: number;
@@ -122,6 +123,7 @@ const NewArrivals = () => {
       name: product.name,
       price: product.price,
       imageUrl: getProductImage(product),
+      description: product.description || '',
     });
     toast.success(`${product.name} added to cart!`);
   };

@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import {
   Package,
   Plus,
@@ -13,18 +18,47 @@ import {
   Edit,
   Trash2,
   Eye,
-  DollarSign,
-  Filter,
   MessageCircle
 } from 'lucide-react'
+interface ProductFormData {
+  name: string
+  description: string
+  price: string
+  age_group: string
+  available: boolean
+  gender: string
+  product_type: string
+  is_gift_idea: boolean
+  collection: string
+  gift_category: string
+  image?: File
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate()
   const [products, setProducts] = useState<any[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<any | null>(null)
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: '',
+    description: '',
+    price: '',
+    age_group: '',
+    available: true,
+    gender: '',
+    product_type: '',
+    is_gift_idea: false,
+    collection: '',
+    gift_category: ''
+  })
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const formatPrice = (price: number, currency: string = 'AUD') => {
     return new Intl.NumberFormat('en-AU', {
@@ -37,22 +71,17 @@ export function AdminDashboard() {
     loadProducts()
   }, [])
 
-  useEffect(() => {
-    filterProducts()
-  }, [products, searchQuery, statusFilter, categoryFilter])
-
   const loadProducts = async () => {
     try {
       setIsLoading(true)
 
       const { data: productsData } = await supabase
         .from('products')
-        .select('id, name, description, price, image_url, stock, age_group, is_active, created_at, updated_at, is_gift_idea, gift_category')
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (productsData) {
         setProducts(productsData)
-        setFilteredProducts(productsData)
       }
 
     } catch (error) {
@@ -62,67 +91,266 @@ export function AdminDashboard() {
     }
   }
 
-  const filterProducts = () => {
-    let filtered = products
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchQuery.toLowerCase())
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
+    const matchesStatus = statusFilter === 'all' || (
+      statusFilter === 'available' && product.is_active && product.stock > 0
+    ) || (
+      statusFilter === 'sold' && (!product.is_active || product.stock === 0)
+    )
 
-    // Status filter
-    if (statusFilter !== 'all') {
-      switch (statusFilter) {
-        case 'available':
-          filtered = filtered.filter(p => p.is_active && p.stock > 0)
-          break
-        case 'sold':
-          filtered = filtered.filter(p => !p.is_active || p.stock === 0)
-          break
-      }
-    }
+    const matchesCategory = categoryFilter === 'all' || (
+      categoryFilter === 'gift-ideas' && product.is_gift_idea
+    ) || (
+      product.age_group === categoryFilter
+    )
 
-    // Category filter
-    if (categoryFilter !== 'all') {
-      if (categoryFilter === 'gift-ideas') {
-        filtered = filtered.filter(p => p.is_gift_idea)
-      } else {
-        filtered = filtered.filter(p => p.age_group === categoryFilter)
-      }
-    }
-
-    setFilteredProducts(filtered)
-  }
+    return matchesSearch && matchesStatus && matchesCategory
+  })
 
   const getProductStatus = (product: any) => {
     if (!product.is_active || product.stock === 0) {
-      return { label: 'Sold', variant: 'destructive' as const }
+      return { label: 'Sold', variant: 'destructive' as const, color: 'bg-red-100 text-red-800' }
     }
-    return { label: 'Available', variant: 'default' as const }
+    return { label: 'Available', variant: 'default' as const, color: 'bg-green-100 text-green-800' }
   }
 
-  const deleteProduct = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-      return
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${crypto.randomUUID()}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(fileName, file)
+
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage
+      .from('product-images')
+      .getPublicUrl(fileName)
+
+    return data.publicUrl
+  }
+
+  const deleteImageFromStorage = async (imageUrl: string) => {
+    try {
+      const fileName = imageUrl.split('/').pop()
+      if (fileName) {
+        await supabase.storage
+          .from('product-images')
+          .remove([fileName])
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error)
+    }
+  }
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {}
+
+    if (!formData.name.trim()) errors.name = 'Name is required'
+    if (!formData.description.trim()) errors.description = 'Description is required'
+    if (formData.description.length > 500) errors.description = 'Description must be 500 characters or less'
+    if (!formData.price || parseFloat(formData.price) < 0.01) errors.price = 'Price must be at least $0.01'
+    if (!formData.age_group) errors.age_group = 'Age group is required'
+    if (!formData.gender || formData.gender === 'not-selected') errors.gender = 'Gender is required'
+    if (!formData.product_type || formData.product_type === 'not-selected') errors.product_type = 'Product type is required'
+    if (!editingProduct && !formData.image) errors.image = 'Image is required'
+    if (formData.is_gift_idea && (!formData.gift_category || formData.gift_category === 'not-selected')) {
+      errors.gift_category = 'Gift category is required when marked as gift idea'
     }
 
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      age_group: '',
+      available: true,
+      gender: 'not-selected',
+      product_type: 'not-selected',
+      is_gift_idea: false,
+      collection: '',
+      gift_category: 'not-selected'
+    })
+    setFormErrors({})
+    setImagePreview(null)
+    setEditingProduct(null)
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+      if (!validTypes.includes(file.type)) {
+        setFormErrors({ ...formErrors, image: 'Please select a JPG, PNG, or WebP image' })
+        return
+      }
+
+      setFormData({ ...formData, image: file })
+
+      // Create preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+
+      // Clear image error
+      const newErrors = { ...formErrors }
+      delete newErrors.image
+      setFormErrors(newErrors)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) return
+
+    setSubmitting(true)
+
     try {
+      let imageUrl = editingProduct?.image_url || null
+
+      // Upload new image if provided
+      if (formData.image) {
+        // Delete old image if editing
+        if (editingProduct?.image_url) {
+          await deleteImageFromStorage(editingProduct.image_url)
+        }
+        imageUrl = await uploadImage(formData.image)
+      }
+
+      const productData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        price: parseFloat(formData.price),
+        age_group: formData.age_group,
+        stock: formData.available ? 1 : 0,
+        is_active: formData.available,
+        gender: formData.gender === 'not-selected' ? null : formData.gender || null,
+        product_type: formData.product_type === 'not-selected' ? null : formData.product_type || null,
+        is_gift_idea: formData.is_gift_idea,
+        collection: formData.collection.trim() || null,
+        gift_category: formData.gift_category === 'not-selected' ? null : formData.gift_category || null,
+        image_url: imageUrl
+      }
+
+      if (editingProduct) {
+        // Update existing product
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id)
+
+        if (error) throw error
+
+        setProducts(products.map(p =>
+          p.id === editingProduct.id
+            ? { ...p, ...productData, updated_at: new Date().toISOString() }
+            : p
+        ))
+        setIsEditDialogOpen(false)
+      } else {
+        // Create new product
+        const { data: newProduct, error } = await supabase
+          .from('products')
+          .insert(productData)
+          .select()
+          .single()
+
+        if (error) throw error
+
+        setProducts([newProduct, ...products])
+        setIsAddDialogOpen(false)
+      }
+
+      resetForm()
+    } catch (error) {
+      console.error('Error saving product:', error)
+      alert('Failed to save product. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleEdit = (product: any) => {
+    setEditingProduct(product)
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      age_group: product.age_group,
+      available: product.stock > 0,
+      gender: product.gender || 'not-selected',
+      product_type: product.product_type || 'not-selected',
+      is_gift_idea: product.is_gift_idea || false,
+      collection: product.collection || '',
+      gift_category: product.gift_category || 'not-selected'
+    })
+    setImagePreview(product.image_url)
+    setIsEditDialogOpen(true)
+  }
+
+  const deleteProduct = async (product: any) => {
+    const confirmed = confirm(`Are you sure you want to permanently delete "${product.name}"? This action cannot be undone.`)
+
+    if (!confirmed) return
+
+    try {
+      // Delete the product image from storage if it exists
+      if (product.image_url) {
+        await deleteImageFromStorage(product.image_url)
+      }
+
+      // Hard delete - permanently remove from database
       const { error } = await supabase
         .from('products')
         .delete()
-        .eq('id', productId)
+        .eq('id', product.id)
 
       if (error) throw error
 
-      // Reload data
-      loadProducts()
+      // Remove from local state
+      setProducts(products.filter(p => p.id !== product.id))
     } catch (error) {
       console.error('Error deleting product:', error)
-      alert('Failed to delete product')
+      alert('Failed to delete product. Please try again.')
     }
+  }
+
+  const toggleActive = async (product: any) => {
+    try {
+      const newStatus = !product.is_active
+      const { error } = await supabase
+        .from('products')
+        .update({ is_active: newStatus })
+        .eq('id', product.id)
+
+      if (error) throw error
+
+      setProducts(products.map(p =>
+        p.id === product.id ? { ...p, is_active: newStatus } : p
+      ))
+    } catch (error) {
+      console.error('Error updating product status:', error)
+      alert('Failed to update product status.')
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+    }).format(amount)
   }
 
   if (isLoading) {
@@ -153,10 +381,221 @@ export function AdminDashboard() {
               <MessageCircle className="w-4 h-4 mr-2" />
               Messages
             </Button>
-            <Button onClick={() => navigate('/admin/products/new')}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Product
-            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Product
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add New Product</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <Label htmlFor="name">Product Name *</Label>
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className={formErrors.name ? 'border-red-500' : ''}
+                      />
+                      {formErrors.name && <p className="text-sm text-red-500 mt-1">{formErrors.name}</p>}
+                    </div>
+
+                    <div className="col-span-2">
+                      <Label htmlFor="description">Description * (max 500 characters)</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        maxLength={500}
+                        rows={3}
+                        className={formErrors.description ? 'border-red-500' : ''}
+                      />
+                      <p className="text-sm text-gray-500 mt-1">{formData.description.length}/500</p>
+                      {formErrors.description && <p className="text-sm text-red-500 mt-1">{formErrors.description}</p>}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="price">Price (AUD) *</Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                        className={formErrors.price ? 'border-red-500' : ''}
+                      />
+                      {formErrors.price && <p className="text-sm text-red-500 mt-1">{formErrors.price}</p>}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="available"
+                        checked={formData.available}
+                        onCheckedChange={(checked) => setFormData({ ...formData, available: checked })}
+                      />
+                      <Label htmlFor="available">Available for purchase</Label>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="age_group">Age Group *</Label>
+                      <Select value={formData.age_group} onValueChange={(value) => setFormData({ ...formData, age_group: value })}>
+                        <SelectTrigger className={formErrors.age_group ? 'border-red-500' : ''}>
+                          <SelectValue placeholder="Select age group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="3mths">3 Months</SelectItem>
+                          <SelectItem value="6mths">6 Months</SelectItem>
+                          <SelectItem value="9mths">9 Months</SelectItem>
+                          <SelectItem value="1yr">1 Year</SelectItem>
+                          <SelectItem value="2yrs">2 Years</SelectItem>
+                          <SelectItem value="3yrs">3 Years</SelectItem>
+                          <SelectItem value="4yrs">4 Years</SelectItem>
+                          <SelectItem value="5yrs">5 Years</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formErrors.age_group && <p className="text-sm text-red-500 mt-1">{formErrors.age_group}</p>}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="gender">Gender *</Label>
+                      <Select
+                        value={formData.gender || 'not-selected'}
+                        onValueChange={(value) => setFormData({ ...formData, gender: value === 'not-selected' ? '' : value })}
+                      >
+                        <SelectTrigger className={formErrors.gender ? 'border-red-500' : ''}>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not-selected" disabled>Select gender</SelectItem>
+                          <SelectItem value="Boys">Boys</SelectItem>
+                          <SelectItem value="Girls">Girls</SelectItem>
+                          <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formErrors.gender && <p className="text-sm text-red-500 mt-1">{formErrors.gender}</p>}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="product_type">Product Type *</Label>
+                      <Select
+                        value={formData.product_type || 'not-selected'}
+                        onValueChange={(value) => setFormData({ ...formData, product_type: value === 'not-selected' ? '' : value })}
+                      >
+                        <SelectTrigger className={formErrors.product_type ? 'border-red-500' : ''}>
+                          <SelectValue placeholder="Select product type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not-selected" disabled>Select product type</SelectItem>
+                          <SelectItem value="Accessories">Accessories</SelectItem>
+                          <SelectItem value="Dress">Dress</SelectItem>
+                          <SelectItem value="Jacket">Jacket</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value="Overalls">Overalls</SelectItem>
+                          <SelectItem value="Pants">Pants</SelectItem>
+                          <SelectItem value="Romper">Romper</SelectItem>
+                          <SelectItem value="Sets">Sets</SelectItem>
+                          <SelectItem value="Shirts">Shirts</SelectItem>
+                          <SelectItem value="Shorts">Shorts</SelectItem>
+                          <SelectItem value="Top">Top</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formErrors.product_type && <p className="text-sm text-red-500 mt-1">{formErrors.product_type}</p>}
+                    </div>
+
+                    <div className="col-span-2">
+                      <Label htmlFor="collection">Collection (Optional)</Label>
+                      <Input
+                        id="collection"
+                        type="text"
+                        placeholder="e.g., Garden Party, Modern Vintage"
+                        value={formData.collection}
+                        onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Switch
+                          id="is_gift_idea"
+                          checked={formData.is_gift_idea}
+                          onCheckedChange={(checked) => {
+                            setFormData({ ...formData, is_gift_idea: checked })
+                            if (!checked) {
+                              setFormData(prev => ({ ...prev, gift_category: '' }))
+                            }
+                          }}
+                        />
+                        <Label htmlFor="is_gift_idea">Featured as Gift Idea</Label>
+                      </div>
+
+                      {formData.is_gift_idea && (
+                        <div>
+                          <Label htmlFor="gift_category">Gift Category</Label>
+                          <Select
+                            value={formData.gift_category || 'not-selected'}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, gift_category: value === 'not-selected' ? '' : value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select gift category..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="not-selected" disabled>Select a category</SelectItem>
+                              <SelectItem value="First Birthday">First Birthday</SelectItem>
+                              <SelectItem value="New Baby">New Baby</SelectItem>
+                              <SelectItem value="Christmas">Christmas</SelectItem>
+                              <SelectItem value="Easter">Easter</SelectItem>
+                              <SelectItem value="Starting School">Starting School</SelectItem>
+                              <SelectItem value="Big Sibling">Big Sibling</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {formErrors.gift_category && (
+                            <p className="text-red-500 text-sm mt-1">{formErrors.gift_category}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="col-span-2">
+                      <Label htmlFor="image">Product Image * (JPG, PNG, WebP)</Label>
+                      <Input
+                        id="image"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        onChange={handleImageChange}
+                        className={formErrors.image ? 'border-red-500' : ''}
+                      />
+                      {formErrors.image && <p className="text-sm text-red-500 mt-1">{formErrors.image}</p>}
+
+                      {imagePreview && (
+                        <div className="mt-4">
+                          <Label>Preview:</Label>
+                          <div className="relative w-32 h-32 border rounded overflow-hidden">
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={submitting}>
+                      {submitting ? 'Creating...' : 'Create Product'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -199,139 +638,344 @@ export function AdminDashboard() {
               </Select>
             </div>
           </div>
-          <div className="mt-4 text-sm text-gray-600">
-            <span className="font-medium">{filteredProducts.length}</span> of <span className="font-medium">{products.length}</span> products
-          </div>
         </div>
 
         {/* Products Table */}
         <Card>
-          <CardContent className="p-0">
-            {filteredProducts.length === 0 ? (
+          <CardHeader>
+            <CardTitle>{filteredProducts.length} of {products.length} products</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Age Group</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => {
+                  const status = getProductStatus(product)
+
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                            {product.image_url ? (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Package className="w-5 h-5 text-gray-400" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900 max-w-xs truncate">
+                              {product.name}
+                            </div>
+                            <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                            {product.is_gift_idea && (
+                              <div className="text-sm text-blue-600">
+                                Gift: {product.gift_category}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {formatCurrency(product.price)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                          {product.stock > 0 ? 'Available' : 'Sold'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={status.color}>
+                          {status.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{product.age_group}</TableCell>
+                      <TableCell>
+                        <span className="text-gray-600">
+                          {new Date(product.created_at).toLocaleDateString()}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/products/${product.id}`)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(product)}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Switch
+                            checked={product.is_active}
+                            onCheckedChange={() => toggleActive(product)}
+                            disabled={!product.is_active && product.stock === 0}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteProduct(product)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+
+            {filteredProducts.length === 0 && (
               <div className="text-center py-12">
-                <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-medium mb-2">No products found</h3>
-                <p className="text-muted-foreground mb-4">
-                  {products.length === 0
-                    ? "Create your first product to get started"
-                    : "Try adjusting your search or filters"
+                <p className="text-gray-500">
+                  {searchQuery || statusFilter !== 'all' || categoryFilter !== 'all'
+                    ? 'Try adjusting your filters'
+                    : 'Products will appear here when you create them'
                   }
                 </p>
-                {products.length === 0 && (
-                  <Button onClick={() => navigate('/admin/products/new')}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Product
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Product</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Price</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Stock</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Age Group</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">Created</th>
-                      <th className="text-right py-3 px-4 font-medium text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredProducts.map((product) => {
-                      const status = getProductStatus(product)
-
-                      return (
-                        <tr key={product.id} className="border-b hover:bg-gray-50">
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                {product.image_url ? (
-                                  <img
-                                    src={product.image_url}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <Package className="w-5 h-5 text-gray-400" />
-                                )}
-                              </div>
-                              <div>
-                                <div className="font-medium text-gray-900 max-w-xs truncate">
-                                  {product.name}
-                                </div>
-                                {product.is_gift_idea && (
-                                  <div className="text-sm text-blue-600">
-                                    Gift: {product.gift_category}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="font-medium text-gray-900">
-                              {formatPrice(product.price, 'AUD')}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className={`font-medium ${
-                              product.stock === 0 ? 'text-red-600' :
-                              product.stock <= 5 ? 'text-orange-600' : 'text-gray-900'
-                            }`}>
-                              {product.stock}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge variant={status.variant}>{status.label}</Badge>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-gray-600">{product.age_group}</span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-gray-600">
-                              {new Date(product.created_at).toLocaleDateString()}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-2 justify-end">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => navigate(`/products/${product.id}`)}
-                                className="px-2"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => navigate(`/admin/products/${product.id}/edit`)}
-                                className="px-2"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => deleteProduct(product.id)}
-                                className="px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
               </div>
             )}
           </CardContent>
         </Card>
 
       </div>
+
+
+      {/* Edit Product Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Product</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="edit-name">Product Name *</Label>
+                <Input
+                  id="edit-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className={formErrors.name ? 'border-red-500' : ''}
+                />
+                {formErrors.name && <p className="text-sm text-red-500 mt-1">{formErrors.name}</p>}
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="edit-description">Description * (max 500 characters)</Label>
+                <Textarea
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  maxLength={500}
+                  rows={3}
+                  className={formErrors.description ? 'border-red-500' : ''}
+                />
+                <p className="text-sm text-gray-500 mt-1">{formData.description.length}/500</p>
+                {formErrors.description && <p className="text-sm text-red-500 mt-1">{formErrors.description}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="edit-price">Price (AUD) *</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  className={formErrors.price ? 'border-red-500' : ''}
+                />
+                {formErrors.price && <p className="text-sm text-red-500 mt-1">{formErrors.price}</p>}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="edit-available"
+                  checked={formData.available}
+                  onCheckedChange={(checked) => setFormData({ ...formData, available: checked })}
+                />
+                <Label htmlFor="edit-available">Available for purchase</Label>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-age_group">Age Group *</Label>
+                <Select value={formData.age_group} onValueChange={(value) => setFormData({ ...formData, age_group: value })}>
+                  <SelectTrigger className={formErrors.age_group ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select age group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3mths">3 Months</SelectItem>
+                    <SelectItem value="6mths">6 Months</SelectItem>
+                    <SelectItem value="9mths">9 Months</SelectItem>
+                    <SelectItem value="1yr">1 Year</SelectItem>
+                    <SelectItem value="2yrs">2 Years</SelectItem>
+                    <SelectItem value="3yrs">3 Years</SelectItem>
+                    <SelectItem value="4yrs">4 Years</SelectItem>
+                    <SelectItem value="5yrs">5 Years</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formErrors.age_group && <p className="text-sm text-red-500 mt-1">{formErrors.age_group}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="edit-gender">Gender *</Label>
+                <Select
+                  value={formData.gender || 'not-selected'}
+                  onValueChange={(value) => setFormData({ ...formData, gender: value === 'not-selected' ? '' : value })}
+                >
+                  <SelectTrigger className={formErrors.gender ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not-selected" disabled>Select gender</SelectItem>
+                    <SelectItem value="Boys">Boys</SelectItem>
+                    <SelectItem value="Girls">Girls</SelectItem>
+                    <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formErrors.gender && <p className="text-sm text-red-500 mt-1">{formErrors.gender}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="edit-product_type">Product Type *</Label>
+                <Select
+                  value={formData.product_type || 'not-selected'}
+                  onValueChange={(value) => setFormData({ ...formData, product_type: value === 'not-selected' ? '' : value })}
+                >
+                  <SelectTrigger className={formErrors.product_type ? 'border-red-500' : ''}>
+                    <SelectValue placeholder="Select product type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not-selected" disabled>Select product type</SelectItem>
+                    <SelectItem value="Accessories">Accessories</SelectItem>
+                    <SelectItem value="Dress">Dress</SelectItem>
+                    <SelectItem value="Jacket">Jacket</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="Overalls">Overalls</SelectItem>
+                    <SelectItem value="Pants">Pants</SelectItem>
+                    <SelectItem value="Romper">Romper</SelectItem>
+                    <SelectItem value="Sets">Sets</SelectItem>
+                    <SelectItem value="Shirts">Shirts</SelectItem>
+                    <SelectItem value="Shorts">Shorts</SelectItem>
+                    <SelectItem value="Top">Top</SelectItem>
+                  </SelectContent>
+                </Select>
+                {formErrors.product_type && <p className="text-sm text-red-500 mt-1">{formErrors.product_type}</p>}
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="edit-collection">Collection (Optional)</Label>
+                <Input
+                  id="edit-collection"
+                  type="text"
+                  placeholder="e.g., Garden Party, Modern Vintage"
+                  value={formData.collection}
+                  onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center space-x-2 mb-3">
+                  <Switch
+                    id="edit-is_gift_idea"
+                    checked={formData.is_gift_idea}
+                    onCheckedChange={(checked) => {
+                      setFormData({ ...formData, is_gift_idea: checked })
+                      if (!checked) {
+                        setFormData(prev => ({ ...prev, gift_category: '' }))
+                      }
+                    }}
+                  />
+                  <Label htmlFor="edit-is_gift_idea">Featured as Gift Idea</Label>
+                </div>
+
+                {formData.is_gift_idea && (
+                  <div>
+                    <Label htmlFor="edit-gift_category">Gift Category</Label>
+                    <Select
+                      value={formData.gift_category || 'not-selected'}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, gift_category: value === 'not-selected' ? '' : value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gift category..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-selected" disabled>Select a category</SelectItem>
+                        <SelectItem value="First Birthday">First Birthday</SelectItem>
+                        <SelectItem value="New Baby">New Baby</SelectItem>
+                        <SelectItem value="Christmas">Christmas</SelectItem>
+                        <SelectItem value="Easter">Easter</SelectItem>
+                        <SelectItem value="Starting School">Starting School</SelectItem>
+                        <SelectItem value="Big Sibling">Big Sibling</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {formErrors.gift_category && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.gift_category}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="edit-image">Change Image (optional)</Label>
+                <Input
+                  id="edit-image"
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                  onChange={handleImageChange}
+                  className={formErrors.image ? 'border-red-500' : ''}
+                />
+                {formErrors.image && <p className="text-sm text-red-500 mt-1">{formErrors.image}</p>}
+
+                {imagePreview && (
+                  <div className="mt-4">
+                    <Label>Current/Preview Image:</Label>
+                    <div className="relative w-32 h-32 border rounded overflow-hidden">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? 'Updating...' : 'Update Product'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

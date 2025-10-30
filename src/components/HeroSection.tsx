@@ -66,12 +66,6 @@ const HeroSection = () => {
                   />
                 </div>
 
-                {/* "New Arrival" badge */}
-                <div className="absolute top-4 left-4">
-                  <Badge className="bg-primary text-primary-foreground font-inter font-medium px-3 py-1 rounded-full shadow-medium">
-                    New Arrival
-                  </Badge>
-                </div>
               </div>
             </div>
           </div>

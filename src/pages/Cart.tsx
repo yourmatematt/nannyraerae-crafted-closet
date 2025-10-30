@@ -6,6 +6,8 @@ import { useCart } from "@/contexts/CartContext";
 import { Trash2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -14,11 +16,56 @@ const Cart = () => {
   const shipping = 12.00; // Standard flat-rate shipping
   const total = subtotal + shipping;
 
+  // Fetch product descriptions for cart items that don't have them
+  const productIds = items.filter(item => !item.description || !item.description.trim()).map(item => item.productId);
+
+  const { data: productDescriptions = {} } = useQuery({
+    queryKey: ['cartProductDescriptions', productIds],
+    queryFn: async () => {
+      if (productIds.length === 0) return {};
+
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, description')
+        .in('id', productIds);
+
+      if (error) {
+        console.error('Error fetching product descriptions:', error);
+        return {};
+      }
+
+      // Convert to object for easy lookup
+      const descriptionsMap: { [key: string]: string } = {};
+      data?.forEach(product => {
+        descriptionsMap[product.id.toString()] = product.description || '';
+      });
+
+      return descriptionsMap;
+    },
+    enabled: productIds.length > 0
+  });
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-AU', {
       style: 'currency',
       currency: 'AUD',
     }).format(amount);
+  };
+
+  const getItemDescription = (item: any) => {
+    // First check if the item already has a description
+    if (item.description && item.description.trim()) {
+      return item.description;
+    }
+
+    // Otherwise, check if we fetched it from the database
+    const fetchedDescription = productDescriptions[item.productId];
+    if (fetchedDescription && fetchedDescription.trim()) {
+      return fetchedDescription;
+    }
+
+    // Fallback to default text
+    return 'One-of-a-kind piece';
   };
 
   const handleCheckout = () => {
@@ -114,10 +161,10 @@ const Cart = () => {
                         {formatCurrency(item.price)}
                       </p>
 
-                      {/* Remove Item */}
+                      {/* Product Description and Remove Item */}
                       <div className="flex items-center gap-3">
                         <span className="font-inter text-sm text-muted-foreground">
-                          One-of-a-kind piece
+                          {getItemDescription(item)}
                         </span>
                         <Button
                           variant="ghost"
