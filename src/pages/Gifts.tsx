@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/contexts/CartContext";
 import { cn } from "@/lib/utils";
@@ -215,40 +214,6 @@ const Gifts = () => {
     }
   ];
 
-  const giftSets = [
-    {
-      name: "Welcome Baby Set",
-      description: "3 essential pieces plus soft blanket",
-      price: 189,
-      originalPrice: 220,
-      image: productRomper,
-      includes: ["Organic romper", "Soft pants", "Welcome hat", "Bamboo blanket"]
-    },
-    {
-      name: "Toddler Essentials Set",
-      description: "Perfect for active little ones",
-      price: 165,
-      originalPrice: 195,
-      image: productDress,
-      includes: ["Play dress", "Comfortable pants", "Matching headband"]
-    },
-    {
-      name: "Special Occasion Set",
-      description: "Party-ready coordinated pieces",
-      price: 210,
-      originalPrice: 245,
-      image: heroImage,
-      includes: ["Formal dress", "Cardigan", "Special occasion accessories"]
-    },
-    {
-      name: "Seasonal Favorites Set",
-      description: "Current season's best pieces",
-      price: 145,
-      originalPrice: 170,
-      image: productPants,
-      includes: ["2 seasonal pieces", "Coordinating accessories"]
-    }
-  ];
 
   const priceRanges = [
     {
@@ -292,63 +257,20 @@ const Gifts = () => {
       <Navigation />
       
       {/* Page Header */}
-      <section className="py-12">
+      <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-bold mb-4" style={{ color: '#8E5A3B' }}>Gift Ideas</h1>
-          <p className="text-lg text-gray-600 mb-10">
-            Perfect presents for the special little ones in your life
-          </p>
-
-          {/* Filter Bar */}
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between border-b border-gray-200 pb-6">
-            <div className="flex items-center gap-4">
-              <Select>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="By Age" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3mths">3 months</SelectItem>
-                  <SelectItem value="6mths">6 months</SelectItem>
-                  <SelectItem value="9mths">9 months</SelectItem>
-                  <SelectItem value="1yr">1 year</SelectItem>
-                  <SelectItem value="2yrs">2 years</SelectItem>
-                  <SelectItem value="3yrs">3 years</SelectItem>
-                  <SelectItem value="4yrs">4 years</SelectItem>
-                  <SelectItem value="5yrs">5 years</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="By Gender" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Genders</SelectItem>
-                  <SelectItem value="Boys">Boys</SelectItem>
-                  <SelectItem value="Girls">Girls</SelectItem>
-                  <SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select>
-                <SelectTrigger className="w-36">
-                  <SelectValue placeholder="By Occasion" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="baby">New Baby</SelectItem>
-                  <SelectItem value="birthday">Birthday</SelectItem>
-                  <SelectItem value="christmas">Christmas</SelectItem>
-                  <SelectItem value="easter">Easter</SelectItem>
-                  <SelectItem value="school">Starting School</SelectItem>
-                </SelectContent>
-              </Select>
-
-            </div>
-
-            <div className="text-sm text-gray-600">
-              <span className="font-semibold">6</span> occasions
-            </div>
+          <div className="text-center">
+            <h1 className="font-playfair text-4xl lg:text-5xl font-bold mb-6" style={{ color: '#8E5A3B' }}>
+              Gift Ideas
+            </h1>
+            <p className="font-inter text-xl mb-4 text-muted-foreground">
+              Perfect presents for every milestone, lovingly handcrafted for special moments
+            </p>
+            <p className="font-inter text-lg text-muted-foreground">
+              Thoughtful gift collections curated by age, gender, and occasion
+            </p>
           </div>
+
         </div>
       </section>
 
@@ -459,66 +381,6 @@ const Gifts = () => {
         </div>
       </section>
 
-      {/* Gift Sets */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="font-playfair text-3xl font-bold mb-4" style={{ color: '#A38C71' }}>
-              Curated Gift Sets
-            </h2>
-            <p className="font-inter text-lg text-muted-foreground">
-              Thoughtfully bundled pieces with special packaging and savings
-            </p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {giftSets.map((set) => (
-              <div key={set.name} className="group cursor-pointer bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-large transition-all duration-300">
-                <div className="md:flex">
-                  <div className="md:w-1/2 aspect-[4/3] md:aspect-auto bg-muted overflow-hidden">
-                    <img 
-                      src={set.image} 
-                      alt={set.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="md:w-1/2 p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-playfair text-xl font-bold text-foreground">{set.name}</h3>
-                        <Badge className="bg-brand-coral text-white">Set Savings</Badge>
-                      </div>
-                      <p className="font-inter text-muted-foreground mb-4">{set.description}</p>
-                      <div className="mb-4">
-                        <h4 className="font-inter font-semibold text-foreground mb-2">What's Included:</h4>
-                        <ul className="space-y-1">
-                          {(set.includes || []).map((item, index) => (
-                            <li key={index} className="font-inter text-sm text-muted-foreground flex items-center gap-2">
-                              <span className="text-primary">✓</span>
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-4">
-                        <span className="font-inter text-2xl font-bold text-primary">${set.price}</span>
-                        {(set.original_price || set.originalPrice) && (
-                          <>
-                            <span className="font-inter text-lg text-muted-foreground line-through">${set.original_price || set.originalPrice}</span>
-                            <Badge variant="secondary" className="text-xs">Save ${(set.original_price || set.originalPrice) - set.price}</Badge>
-                          </>
-                        )}
-                      </div>
-                      <Button className="w-full">Add Gift Set to Cart</Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
 
 
