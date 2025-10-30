@@ -469,6 +469,7 @@ const Checkout = () => {
                               },
                             },
                           },
+                          hidePostalCode: true,
                         }}
                       />
                     </div>
