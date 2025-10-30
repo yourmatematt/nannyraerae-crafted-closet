@@ -187,25 +187,27 @@ const Checkout = () => {
         status: 'completed'
       };
 
-      console.log('Creating order with data:', orderData);
+      // Before creating the order
+      console.log('=== ORDER DATA BEING SENT ===');
+      console.log('Order data:', JSON.stringify(orderData, null, 2));
 
       // Create order record
-      const { data: order, error: orderError } = await supabase
+      const { data: orderResult, error: orderError } = await supabase
         .from('orders')
         .insert(orderData)
-        .select()
-        .single();
+        .select();
 
       if (orderError) {
-        console.error('Supabase order creation error:', {
-          error: orderError,
-          message: orderError.message,
-          details: orderError.details,
-          hint: orderError.hint,
-          code: orderError.code
-        });
+        console.error('=== ORDER CREATION ERROR ===');
+        console.error('Error code:', orderError.code);
+        console.error('Error message:', orderError.message);
+        console.error('Error details:', orderError.details);
+        console.error('Error hint:', orderError.hint);
+        console.error('Full error:', JSON.stringify(orderError, null, 2));
         throw orderError;
       }
+
+      const order = orderResult[0]; // Get first result since we're not using .single()
 
       // Create order items
       const orderItems = items.map(item => ({
@@ -217,11 +219,25 @@ const Checkout = () => {
         quantity: item.quantity || 1
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      // Before creating order items
+      console.log('=== ORDER ITEMS DATA BEING SENT ===');
+      console.log('Order items:', JSON.stringify(orderItems, null, 2));
 
-      if (itemsError) throw itemsError;
+      // Create order items
+      const { data: itemsResult, error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems)
+        .select();
+
+      if (itemsError) {
+        console.error('=== ORDER ITEMS ERROR ===');
+        console.error('Error code:', itemsError.code);
+        console.error('Error message:', itemsError.message);
+        console.error('Error details:', itemsError.details);
+        console.error('Error hint:', itemsError.hint);
+        console.error('Full error:', JSON.stringify(itemsError, null, 2));
+        throw itemsError;
+      }
 
       // Mark reservations as completed (rather than releasing them)
       for (const item of items) {
