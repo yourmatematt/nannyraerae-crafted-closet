@@ -37,7 +37,6 @@ interface ProductFormData {
   price: string
   age_group: string
   available: boolean
-  is_active: boolean
   gender: string
   product_type: string
   is_gift_idea: boolean
@@ -60,7 +59,6 @@ export default function Products() {
     price: '',
     age_group: '',
     available: true,
-    is_active: true,
     gender: '',
     product_type: '',
     is_gift_idea: false,
@@ -145,7 +143,6 @@ export default function Products() {
       price: '',
       age_group: '',
       available: true,
-      is_active: true,
       gender: 'not-selected',
       product_type: 'not-selected',
       is_gift_idea: false,
@@ -208,7 +205,7 @@ export default function Products() {
         price: parseFloat(formData.price),
         age_group: formData.age_group,
         stock: formData.available ? 1 : 0, // Convert available boolean to stock number
-        is_active: formData.is_active,
+        is_active: formData.available, // Use available state for is_active as well
         gender: formData.gender === 'not-selected' ? null : formData.gender || null,
         product_type: formData.product_type === 'not-selected' ? null : formData.product_type || null,
         is_gift_idea: formData.is_gift_idea,
@@ -263,7 +260,6 @@ export default function Products() {
       price: product.price.toString(),
       age_group: product.age_group,
       available: product.stock > 0, // Convert stock number to available boolean
-      is_active: product.is_active,
       gender: product.gender || 'not-selected',
       product_type: product.product_type || 'not-selected',
       is_gift_idea: product.is_gift_idea || false,
@@ -275,22 +271,26 @@ export default function Products() {
   }
 
   const handleDelete = async (product: Product) => {
-    const confirmed = confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)
+    const confirmed = confirm(`Are you sure you want to permanently delete "${product.name}"? This action cannot be undone.`)
 
     if (!confirmed) return
 
     try {
-      // Soft delete - set is_active to false
+      // Delete the product image from storage if it exists
+      if (product.image_url) {
+        await deleteImageFromStorage(product.image_url)
+      }
+
+      // Hard delete - permanently remove from database
       const { error } = await supabase
         .from('products')
-        .update({ is_active: false })
+        .delete()
         .eq('id', product.id)
 
       if (error) throw error
 
-      setProducts(products.map(p =>
-        p.id === product.id ? { ...p, is_active: false } : p
-      ))
+      // Remove from local state
+      setProducts(products.filter(p => p.id !== product.id))
     } catch (error) {
       console.error('Error deleting product:', error)
       alert('Failed to delete product. Please try again.')
@@ -317,10 +317,10 @@ export default function Products() {
   }
 
   const getProductStatus = (product: Product) => {
-    if (!product.is_active) return { label: 'Inactive', variant: 'secondary' as const, color: 'bg-gray-100 text-gray-800' }
-    if (product.stock === 0) return { label: 'Out of Stock', variant: 'destructive' as const, color: 'bg-red-100 text-red-800' }
-    if (product.stock <= 5) return { label: 'Low Stock', variant: 'outline' as const, color: 'bg-yellow-100 text-yellow-800' }
-    return { label: 'Active', variant: 'default' as const, color: 'bg-green-100 text-green-800' }
+    if (!product.is_active || product.stock === 0) {
+      return { label: 'Sold', variant: 'destructive' as const, color: 'bg-red-100 text-red-800' }
+    }
+    return { label: 'Available', variant: 'default' as const, color: 'bg-green-100 text-green-800' }
   }
 
   const filteredProducts = products.filter(product => {
@@ -328,13 +328,9 @@ export default function Products() {
                          product.description.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === 'all' || (
-      statusFilter === 'active' && product.is_active && product.stock > 0
-    ) || (
-      statusFilter === 'inactive' && !product.is_active
-    ) || (
       statusFilter === 'available' && product.is_active && product.stock > 0
     ) || (
-      statusFilter === 'sold' && (product.stock === 0 || !product.is_active)
+      statusFilter === 'sold' && (!product.is_active || product.stock === 0)
     )
 
     return matchesSearch && matchesStatus
@@ -434,12 +430,14 @@ export default function Products() {
                           <SelectValue placeholder="Select age group" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="0-3 months">0-3 months</SelectItem>
-                          <SelectItem value="3-12 months">3-12 months</SelectItem>
-                          <SelectItem value="1-3 years">1-3 years</SelectItem>
-                          <SelectItem value="3-5 years">3-5 years</SelectItem>
-                          <SelectItem value="5-10 years">5-10 years</SelectItem>
-                          <SelectItem value="All Ages">All Ages</SelectItem>
+                          <SelectItem value="3mths">3 Months</SelectItem>
+                          <SelectItem value="6mths">6 Months</SelectItem>
+                          <SelectItem value="9mths">9 Months</SelectItem>
+                          <SelectItem value="1yr">1 Year</SelectItem>
+                          <SelectItem value="2yrs">2 Years</SelectItem>
+                          <SelectItem value="3yrs">3 Years</SelectItem>
+                          <SelectItem value="4yrs">4 Years</SelectItem>
+                          <SelectItem value="5yrs">5 Years</SelectItem>
                         </SelectContent>
                       </Select>
                       {formErrors.age_group && <p className="text-sm text-red-500 mt-1">{formErrors.age_group}</p>}
@@ -545,14 +543,6 @@ export default function Products() {
                       )}
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="is_active"
-                        checked={formData.is_active}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                      />
-                      <Label htmlFor="is_active">Product is active</Label>
-                    </div>
 
                     <div className="col-span-2">
                       <Label htmlFor="image">Product Image * (JPG, PNG, WebP)</Label>
@@ -609,8 +599,6 @@ export default function Products() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Products</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="available">Available</SelectItem>
               <SelectItem value="sold">Sold</SelectItem>
             </SelectContent>
@@ -786,12 +774,14 @@ export default function Products() {
                     <SelectValue placeholder="Select age group" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0-3 months">0-3 months</SelectItem>
-                    <SelectItem value="3-12 months">3-12 months</SelectItem>
-                    <SelectItem value="1-3 years">1-3 years</SelectItem>
-                    <SelectItem value="3-5 years">3-5 years</SelectItem>
-                    <SelectItem value="5-10 years">5-10 years</SelectItem>
-                    <SelectItem value="All Ages">All Ages</SelectItem>
+                    <SelectItem value="3mths">3 Months</SelectItem>
+                    <SelectItem value="6mths">6 Months</SelectItem>
+                    <SelectItem value="9mths">9 Months</SelectItem>
+                    <SelectItem value="1yr">1 Year</SelectItem>
+                    <SelectItem value="2yrs">2 Years</SelectItem>
+                    <SelectItem value="3yrs">3 Years</SelectItem>
+                    <SelectItem value="4yrs">4 Years</SelectItem>
+                    <SelectItem value="5yrs">5 Years</SelectItem>
                   </SelectContent>
                 </Select>
                 {formErrors.age_group && <p className="text-sm text-red-500 mt-1">{formErrors.age_group}</p>}
@@ -897,14 +887,6 @@ export default function Products() {
                 )}
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="edit-is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                />
-                <Label htmlFor="edit-is_active">Product is active</Label>
-              </div>
 
               <div className="col-span-2">
                 <Label htmlFor="edit-image">Change Image (optional)</Label>

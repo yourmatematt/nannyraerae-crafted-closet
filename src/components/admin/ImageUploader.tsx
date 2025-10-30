@@ -11,6 +11,7 @@ interface ImageUploaderProps {
   onReorder?: (images: string[]) => void
   onRemove?: (index: number) => void
   onSetPrimary?: (index: number) => void
+  readOnly?: boolean
 }
 
 export function ImageUploader({
@@ -19,7 +20,8 @@ export function ImageUploader({
   existingImages = [],
   onReorder,
   onRemove,
-  onSetPrimary
+  onSetPrimary,
+  readOnly = false
 }: ImageUploaderProps) {
   const [images, setImages] = useState<(File | string)[]>(existingImages)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -39,7 +41,7 @@ export function ImageUploader({
       'image/*': ['.jpeg', '.jpg', '.png', '.webp']
     },
     maxFiles: maxImages - images.length,
-    disabled: images.length >= maxImages
+    disabled: images.length >= maxImages || readOnly
   })
 
   const removeImage = (indexToRemove: number) => {
@@ -94,7 +96,7 @@ export function ImageUploader({
   return (
     <div className="space-y-4">
       {/* Dropzone */}
-      {images.length < maxImages && (
+      {images.length < maxImages && !readOnly && (
         <div
           {...getRootProps()}
           className={cn(
@@ -159,7 +161,8 @@ export function ImageUploader({
               )}
 
               {/* Overlay controls */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              {!readOnly && (
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <div className="flex gap-1">
                   {/* Move up */}
                   <Button
@@ -206,6 +209,7 @@ export function ImageUploader({
                   </Button>
                 </div>
               </div>
+              )}
 
               {/* Drag indicator */}
               <div className="absolute top-2 right-2">

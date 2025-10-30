@@ -10,6 +10,7 @@ import { PageTransition } from "./components/PageTransition";
 import { TawkWidget } from "./components/TawkWidget";
 import { StripeProvider } from "./components/StripeProvider";
 import { ReservationManager } from "./components/ReservationManager";
+import { ReservationTimerBanner } from "./components/ReservationTimerBanner";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewArrivals from "./pages/NewArrivals";
@@ -62,6 +63,7 @@ const App = () => (
               <ScrollToTop />
               <TawkWidget />
               <ReservationManager />
+              <ReservationTimerBanner />
               <PageTransition>
               <Routes>
               <Route path="/" element={<Index />} />
@@ -117,6 +119,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/admin/products/new" element={
+                <ProtectedRoute>
+                  <AddProduct />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products/:id/edit" element={
                 <ProtectedRoute>
                   <AddProduct />
                 </ProtectedRoute>

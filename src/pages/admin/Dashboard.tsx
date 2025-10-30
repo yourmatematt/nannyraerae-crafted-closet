@@ -76,17 +76,11 @@ export function AdminDashboard() {
     // Status filter
     if (statusFilter !== 'all') {
       switch (statusFilter) {
-        case 'active':
-          filtered = filtered.filter(p => p.is_active)
+        case 'available':
+          filtered = filtered.filter(p => p.is_active && p.stock > 0)
           break
-        case 'inactive':
-          filtered = filtered.filter(p => !p.is_active)
-          break
-        case 'low-stock':
-          filtered = filtered.filter(p => p.stock <= 5 && p.stock > 0)
-          break
-        case 'out-of-stock':
-          filtered = filtered.filter(p => p.stock === 0)
+        case 'sold':
+          filtered = filtered.filter(p => !p.is_active || p.stock === 0)
           break
       }
     }
@@ -104,9 +98,9 @@ export function AdminDashboard() {
   }
 
   const getProductStatus = (product: any) => {
-    if (!product.is_active) return { label: 'Inactive', variant: 'secondary' as const }
-    if (product.stock === 0) return { label: 'Out of Stock', variant: 'destructive' as const }
-    if (product.stock <= 5) return { label: 'Low Stock', variant: 'outline' as const }
+    if (!product.is_active || product.stock === 0) {
+      return { label: 'Sold', variant: 'destructive' as const }
+    }
     return { label: 'Available', variant: 'default' as const }
   }
 
@@ -185,10 +179,8 @@ export function AdminDashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="low-stock">Low Stock</SelectItem>
-                  <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="sold">Sold</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>

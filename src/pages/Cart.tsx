@@ -34,8 +34,7 @@ const Cart = () => {
   if (items.length === 0) {
     return (
       <div className={cn(
-        "min-h-screen bg-gray-50",
-        "pt-20 lg:pt-24"
+        "min-h-screen bg-gray-50"
       )}>
         <Navigation />
 
@@ -68,7 +67,7 @@ const Cart = () => {
   return (
     <div className={cn(
       "min-h-screen bg-gray-50",
-      items.length > 0 ? "pt-32 lg:pt-28" : "pt-20 lg:pt-24"
+      items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
       <Navigation />
 

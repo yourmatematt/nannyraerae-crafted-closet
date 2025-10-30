@@ -76,7 +76,7 @@ const About = () => {
   return (
     <div className={cn(
       "min-h-screen bg-gray-50",
-      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+      items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
       <Navigation />
       
@@ -86,14 +86,12 @@ const About = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="relative">
               <div className="aspect-[4/5] bg-muted rounded-2xl overflow-hidden shadow-large">
-                <div className="w-full h-full bg-gradient-warm flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="w-32 h-32 mx-auto mb-6 bg-white/20 rounded-full flex items-center justify-center">
-                      <span className="text-6xl">👵</span>
-                    </div>
-                    <p className="font-inter text-xl opacity-90">Hello, I'm Nanny Rae Rae</p>
-                  </div>
-                </div>
+                <img
+                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/im-nanny-rae-rae.jpeg"
+                  alt="Hello, I'm Nanny Rae Rae - portrait of the founder and creator behind handmade children's clothing"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
               <div className="absolute -top-8 -right-8 w-24 h-24 bg-brand-coral/30 rounded-full blur-xl"></div>
               <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-brand-mustard/20 rounded-full blur-2xl"></div>

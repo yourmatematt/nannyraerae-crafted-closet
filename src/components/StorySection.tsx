@@ -9,15 +9,12 @@ const StorySection = () => {
           {/* Image Side */}
           <div className="relative">
             <div className="aspect-[4/3] bg-muted rounded-2xl overflow-hidden shadow-medium relative">
-              {/* Placeholder for sewing room image */}
-              <div className="w-full h-full bg-gradient-warm flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="w-24 h-24 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-4xl">🧵</span>
-                  </div>
-                  <p className="font-inter text-lg opacity-90">Nanny Rae Rae&apos;s Sewing Room</p>
-                </div>
-              </div>
+              <img
+                src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/business-joy.png"
+                alt="Happy children wearing Nanny Rae Rae's handmade clothing, showing the joy that drives the business from my sewing room to your family"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
 
             {/* Decorative blobs */}

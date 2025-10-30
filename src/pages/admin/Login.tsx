@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Checkbox } from '@/components/ui/checkbox'
 import AdminDebugger from '@/components/admin/AdminDebugger'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
@@ -28,6 +30,10 @@ export default function AdminLogin() {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          // If remember me is checked, session will last 30 days, otherwise 1 day
+          sessionDurationInSeconds: rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60
+        }
       })
 
       if (authError) {
@@ -126,6 +132,17 @@ export default function AdminLogin() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                />
+                <Label htmlFor="remember" className="text-sm font-normal">
+                  Remember me for 30 days
+                </Label>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

@@ -15,7 +15,7 @@ const Index = () => {
   return (
     <div className={cn(
       "min-h-screen bg-gray-50 font-inter",
-      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+      items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
       <Navigation />
       <main>

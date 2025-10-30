@@ -401,7 +401,7 @@ const Collections = () => {
   return (
     <div className={cn(
       "min-h-screen bg-gray-50",
-      items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+      items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
       <Navigation />
 
@@ -599,7 +599,7 @@ const Collections = () => {
           <section className="py-8 bg-gray-100">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
-                <h2 className="text-3xl font-bold mb-4" style={{ color: '#A38C71' }}>Previous Pieces</h2>
+                <h2 className="text-3xl font-bold mb-4" style={{ color: '#8E5A3B' }}>Previous Pieces</h2>
                 <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                   Beautiful pieces that have found their forever homes. Each one was crafted with the same love and attention to detail.
                 </p>

@@ -183,7 +183,7 @@ export default function ProductDetail() {
       <Navigation />
       <div className={cn(
         "min-h-screen bg-gray-50",
-        items.length > 0 ? "pt-36 lg:pt-32" : "pt-20 lg:pt-24"
+        items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
       )}>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

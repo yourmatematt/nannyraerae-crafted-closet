@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -20,6 +20,7 @@ import { SIZE_OPTIONS } from '../../types'
 const productSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
+  story: z.string().min(5, 'Story must be at least 5 characters'),
   age_group: z.enum(['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs']),
   size: z.string().min(1, 'Size is required'),
   price: z.number().min(1, 'Price must be greater than 0'),
@@ -43,6 +44,13 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
   const [imageUrl, setImageUrl] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+
+  // Set initial image URL when editing
+  useEffect(() => {
+    if (initialData?.image_url) {
+      setImageUrl(initialData.image_url)
+    }
+  }, [initialData])
 
   const {
     register,
@@ -75,10 +83,14 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
 
   // Generate slug from name
   const generateSlug = useCallback((name: string) => {
-    return name
+    const baseSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
+
+    // Add timestamp to ensure uniqueness
+    const timestamp = Date.now().toString().slice(-6)
+    return `${baseSlug}-${timestamp}`
   }, [])
 
   // Handle image upload
@@ -126,6 +138,7 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
         slug: generateSlug(data.name),
         sku: generateSKU(),
         description: data.description,
+        story: data.story,
         price: data.price,
         size: data.size,
         age_group: data.age_group,
@@ -134,8 +147,8 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
         collection: data.collection,
         gift_category: data.gift_category,
         is_gift_idea: data.is_gift_idea,
-        is_active: true,
-        stock: 1
+        is_draft: false, // false means the product is active/published
+        is_sold: false   // false means the product is available for purchase
       }
 
       let productResponse
@@ -214,7 +227,10 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
             <CardHeader>
               <CardTitle>Product Images</CardTitle>
               <CardDescription>
-                Upload high-quality images of your unique piece
+                {productId
+                  ? "Current product image (cannot be changed when editing)"
+                  : "Upload high-quality images of your unique piece"
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -222,6 +238,7 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
                 onImagesSelected={handleImagesSelected}
                 maxImages={1}
                 existingImages={imageUrl ? [imageUrl] : []}
+                readOnly={!!productId}
               />
             </CardContent>
           </Card>
@@ -432,14 +449,14 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="3mths">3 months</SelectItem>
-                      <SelectItem value="6mths">6 months</SelectItem>
-                      <SelectItem value="9mths">9 months</SelectItem>
-                      <SelectItem value="1yr">1 year</SelectItem>
-                      <SelectItem value="2yrs">2 years</SelectItem>
-                      <SelectItem value="3yrs">3 years</SelectItem>
-                      <SelectItem value="4yrs">4 years</SelectItem>
-                      <SelectItem value="5yrs">5 years</SelectItem>
+                      <SelectItem value="3mths">3 Months</SelectItem>
+                      <SelectItem value="6mths">6 Months</SelectItem>
+                      <SelectItem value="9mths">9 Months</SelectItem>
+                      <SelectItem value="1yr">1 Year</SelectItem>
+                      <SelectItem value="2yrs">2 Years</SelectItem>
+                      <SelectItem value="3yrs">3 Years</SelectItem>
+                      <SelectItem value="4yrs">4 Years</SelectItem>
+                      <SelectItem value="5yrs">5 Years</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
