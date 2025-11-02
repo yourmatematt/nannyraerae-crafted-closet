@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Orders & Products</title>
+</head>
+<body>
+    <h1>Debug Orders & Products</h1>
+    <button onclick="checkOrders()">Check Orders in Database</button>
+    <button onclick="checkProducts()">Check Products Stock Status</button>
+    <button onclick="checkWebhookLogs()">Check Recent Webhook Activity</button>
+    <div id="results"></div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://kqshrevhtrusxrwkgdmd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtxc2hyZXZodHJ1c3hyd2tnZG1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODQ0NDcsImV4cCI6MjA3NDI2MDQ0N30.797cTDtt67n9rtpSjOGOawf6od5ETfcfbAftiR3qkJs'
+        );
+
+        async function checkOrders() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Checking orders...</p>';
+
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select(`
+                        *,
+                        order_items (*)
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                results.innerHTML = `
+                    <h3>Orders Found: ${orders.length}</h3>
+                    <pre>${JSON.stringify(orders, null, 2)}</pre>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function checkProducts() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Checking products...</p>';
+
+            try {
+                const { data: products, error } = await supabase
+                    .from('products')
+                    .select('id, name, stock, in_stock, is_active, updated_at')
+                    .order('updated_at', { ascending: false });
+
+                if (error) throw error;
+
+                results.innerHTML = `
+                    <h3>Products Stock Status:</h3>
+                    <table border="1" style="border-collapse: collapse;">
+                        <tr>
+                            <th>Name</th>
+                            <th>Stock</th>
+                            <th>In Stock</th>
+                            <th>Active</th>
+                            <th>Updated</th>
+                        </tr>
+                        ${products.map(p => `
+                            <tr>
+                                <td>${p.name}</td>
+                                <td>${p.stock}</td>
+                                <td>${p.in_stock}</td>
+                                <td>${p.is_active}</td>
+                                <td>${new Date(p.updated_at).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+            } catch (error) {
+                results.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function checkWebhookLogs() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Webhook logs are only visible in Supabase dashboard...</p>';
+
+            // Open Supabase functions logs
+            window.open('https://supabase.com/dashboard/project/kqshrevhtrusxrwkgdmd/functions', '_blank');
+        }
+    </script>
+</body>
+</html>

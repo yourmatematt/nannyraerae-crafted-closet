@@ -47,13 +47,21 @@ serve(async (req) => {
   try {
     // Initialize Stripe
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
+
+    console.log('🔧 Edge Function Environment Check:')
+    console.log('🔧 STRIPE_SECRET_KEY present:', !!stripeSecretKey)
+    console.log('🔧 STRIPE_SECRET_KEY prefix:', stripeSecretKey ? stripeSecretKey.substring(0, 20) + '...' : 'undefined')
+
     if (!stripeSecretKey) {
+      console.error('❌ STRIPE_SECRET_KEY environment variable is not set')
       throw new Error('STRIPE_SECRET_KEY environment variable is not set')
     }
 
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2023-10-16',
     })
+
+    console.log('✅ Stripe initialized successfully')
 
     // Parse request body
     const {
@@ -65,8 +73,22 @@ serve(async (req) => {
       order_summary
     }: PaymentIntentRequest = await req.json()
 
+    console.log('🔧 Payment Intent Request:', {
+      amount,
+      currency,
+      session_id,
+      customer_email: customer_details?.email,
+      cart_items_count: cart_items?.length
+    })
+
     // Validate required fields
     if (!amount || !currency || !session_id || !customer_details?.email) {
+      console.error('❌ Missing required fields:', {
+        amount: !!amount,
+        currency: !!currency,
+        session_id: !!session_id,
+        customer_email: !!customer_details?.email
+      })
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         {
@@ -85,14 +107,9 @@ serve(async (req) => {
       },
       metadata: {
         session_id,
-        customer_email: customer_details.email,
-        customer_name: customer_details.name,
-        customer_phone: customer_details.phone,
-        subtotal: order_summary.subtotal.toString(),
-        shipping: order_summary.shipping.toString(),
-        tax: order_summary.tax.toString(),
-        total: order_summary.total.toString(),
-        item_count: cart_items.length.toString(),
+        customer_details: JSON.stringify(customer_details),
+        order_summary: JSON.stringify(order_summary),
+        cart_items: JSON.stringify(cart_items)
       },
       shipping: {
         name: customer_details.name,

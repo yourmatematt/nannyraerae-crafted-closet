@@ -5,10 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { ArrowLeft, Search, Package, Eye, CheckCircle, MessageCircle } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { ArrowLeft, Search, Package, Eye, CheckCircle, MessageCircle, Users, MapPin, ShoppingBag, Truck } from 'lucide-react'
+import { toast } from 'sonner'
+
+// Order status constants
+const ORDER_STATUSES = {
+  PENDING: 'pending',
+  CONFIRMED: 'confirmed',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delivered',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  REFUNDED: 'refunded'
+} as const
+
+type OrderStatus = typeof ORDER_STATUSES[keyof typeof ORDER_STATUSES]
 
 interface Order {
   id: string
@@ -29,6 +46,8 @@ interface Order {
   stripe_payment_intent_id: string
   stripe_checkout_session_id: string
   created_at: string
+  tracking_number?: string
+  shipped_at?: string
   order_items?: OrderItem[]
 }
 
@@ -46,6 +65,10 @@ export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [fulfillmentModalOpen, setFulfillmentModalOpen] = useState(false)
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [orderItems, setOrderItems] = useState<Record<string, OrderItem[]>>({})
 
   useEffect(() => {
     fetchOrders()
@@ -88,8 +111,111 @@ export default function Orders() {
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder({ ...selectedOrder, status: newStatus })
       }
+
+      toast.success(`Order status updated to ${newStatus}`)
     } catch (error) {
       console.error('Error updating order status:', error)
+      toast.error('Failed to update order status')
+    }
+  }
+
+  const openFulfillmentModal = (order: Order) => {
+    setSelectedOrder(order)
+    setTrackingNumber('')
+    setFulfillmentModalOpen(true)
+
+    // Fetch order items if not already loaded
+    if (!orderItems[order.id]) {
+      fetchOrderItems(order.id)
+    }
+  }
+
+  const closeFulfillmentModal = () => {
+    setFulfillmentModalOpen(false)
+    setSelectedOrder(null)
+    setTrackingNumber('')
+  }
+
+  const fetchOrderItems = async (orderId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select('*')
+        .eq('order_id', orderId)
+
+      if (error) throw error
+
+      setOrderItems(prev => ({
+        ...prev,
+        [orderId]: data || []
+      }))
+    } catch (error) {
+      console.error('Error fetching order items:', error)
+    }
+  }
+
+  const handleFulfillOrder = async () => {
+    if (!selectedOrder || !trackingNumber.trim()) return
+
+    setSubmitting(true)
+    try {
+      // Update order status to shipped
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          status: ORDER_STATUSES.SHIPPED,
+          tracking_number: trackingNumber.trim(),
+          shipped_at: new Date().toISOString()
+        })
+        .eq('id', selectedOrder.id)
+
+      if (error) throw error
+
+      // Update local state
+      const updatedOrder = {
+        ...selectedOrder,
+        status: ORDER_STATUSES.SHIPPED,
+        tracking_number: trackingNumber.trim(),
+        shipped_at: new Date().toISOString()
+      }
+
+      setOrders(orders.map(order =>
+        order.id === selectedOrder.id ? updatedOrder : order
+      ))
+
+      console.log('Order updated successfully, now sending shipping email...')
+
+      // Send shipping confirmation email
+      try {
+        const { data: emailResponse, error: emailError } = await supabase.functions.invoke('send-shipping-email', {
+          body: {
+            orderId: selectedOrder.id,
+            trackingNumber: trackingNumber.trim()
+          }
+        })
+
+        if (emailError) {
+          console.error('Email sending failed:', emailError)
+          toast.warning('Order marked as shipped, but email failed to send. Please contact customer manually.')
+        } else if (emailResponse && emailResponse.success) {
+          toast.success(`Order #${selectedOrder.id.slice(-8)} marked as shipped! Customer has been notified.`)
+          console.log('Shipping confirmation email sent successfully')
+        } else {
+          console.error('Email sending failed:', emailResponse?.error || 'Unknown error')
+          toast.warning('Order marked as shipped, but email failed to send. Please contact customer manually.')
+        }
+      } catch (emailError) {
+        console.error('Error sending shipping email:', emailError)
+        toast.warning('Order marked as shipped, but email failed to send. Please contact customer manually.')
+      }
+
+      closeFulfillmentModal()
+
+    } catch (error) {
+      console.error('Error fulfilling order:', error)
+      toast.error('Failed to fulfill order')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -117,16 +243,32 @@ export default function Orders() {
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'pending': return 'outline' as const  // Yellow
-      case 'paid': return 'default' as const     // Green
-      case 'fulfilled': return 'secondary' as const // Blue
+      case ORDER_STATUSES.PENDING: return 'outline' as const
+      case ORDER_STATUSES.CONFIRMED: return 'default' as const
+      case ORDER_STATUSES.PROCESSING: return 'secondary' as const
+      case ORDER_STATUSES.SHIPPED: return 'default' as const
+      case ORDER_STATUSES.DELIVERED: return 'default' as const
+      case ORDER_STATUSES.COMPLETED: return 'default' as const
+      case ORDER_STATUSES.CANCELLED: return 'destructive' as const
+      case ORDER_STATUSES.REFUNDED: return 'destructive' as const
+      // Legacy status support
+      case 'paid': return 'default' as const
+      case 'fulfilled': return 'secondary' as const
       default: return 'outline' as const
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case ORDER_STATUSES.PENDING: return 'bg-yellow-100 text-yellow-800'
+      case ORDER_STATUSES.CONFIRMED: return 'bg-blue-100 text-blue-800'
+      case ORDER_STATUSES.PROCESSING: return 'bg-indigo-100 text-indigo-800'
+      case ORDER_STATUSES.SHIPPED: return 'bg-purple-100 text-purple-800'
+      case ORDER_STATUSES.DELIVERED: return 'bg-green-100 text-green-800'
+      case ORDER_STATUSES.COMPLETED: return 'bg-green-100 text-green-800'
+      case ORDER_STATUSES.CANCELLED: return 'bg-red-100 text-red-800'
+      case ORDER_STATUSES.REFUNDED: return 'bg-red-100 text-red-800'
+      // Legacy status support
       case 'paid': return 'bg-green-100 text-green-800'
       case 'fulfilled': return 'bg-blue-100 text-blue-800'
       default: return 'bg-gray-100 text-gray-800'
@@ -180,9 +322,17 @@ export default function Orders() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="fulfilled">Fulfilled</SelectItem>
+              <SelectItem value={ORDER_STATUSES.PENDING}>Pending</SelectItem>
+              <SelectItem value={ORDER_STATUSES.CONFIRMED}>Confirmed</SelectItem>
+              <SelectItem value={ORDER_STATUSES.PROCESSING}>Processing</SelectItem>
+              <SelectItem value={ORDER_STATUSES.SHIPPED}>Shipped</SelectItem>
+              <SelectItem value={ORDER_STATUSES.DELIVERED}>Delivered</SelectItem>
+              <SelectItem value={ORDER_STATUSES.COMPLETED}>Completed</SelectItem>
+              <SelectItem value={ORDER_STATUSES.CANCELLED}>Cancelled</SelectItem>
+              <SelectItem value={ORDER_STATUSES.REFUNDED}>Refunded</SelectItem>
+              {/* Legacy status support */}
+              <SelectItem value="paid">Paid (Legacy)</SelectItem>
+              <SelectItem value="fulfilled">Fulfilled (Legacy)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -202,6 +352,7 @@ export default function Orders() {
                   <TableHead>Date</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Tracking</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -225,6 +376,22 @@ export default function Orders() {
                       <Badge className={getStatusColor(order.status)}>
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.tracking_number ? (
+                        <div className="space-y-1">
+                          <div className="font-mono text-sm text-blue-600">
+                            {order.tracking_number}
+                          </div>
+                          {order.shipped_at && (
+                            <div className="text-xs text-gray-500">
+                              Shipped: {new Date(order.shipped_at).toLocaleDateString('en-AU')}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
@@ -326,33 +493,96 @@ export default function Orders() {
                               {/* Status Update */}
                               <div>
                                 <h3 className="font-medium mb-3">Order Status</h3>
-                                <div className="flex items-center gap-4">
-                                  <Badge className={getStatusColor(order.status)}>
-                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                  </Badge>
-                                  {order.status !== 'fulfilled' && (
-                                    <Button
-                                      onClick={() => updateOrderStatus(order.id, 'fulfilled')}
-                                      size="sm"
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-4">
+                                    <Badge className={getStatusColor(order.status)}>
+                                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    </Badge>
+                                  </div>
+
+                                  <div>
+                                    <Label htmlFor="status-select" className="text-sm font-medium mb-2 block">
+                                      Update Status:
+                                    </Label>
+                                    <Select
+                                      value={order.status}
+                                      onValueChange={(newStatus) => updateOrderStatus(order.id, newStatus)}
                                     >
-                                      <CheckCircle className="w-4 h-4 mr-1" />
-                                      Mark as Fulfilled
-                                    </Button>
-                                  )}
+                                      <SelectTrigger className="w-48">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value={ORDER_STATUSES.PENDING}>Pending</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.CONFIRMED}>Confirmed</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.PROCESSING}>Processing</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.SHIPPED}>Shipped</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.DELIVERED}>Delivered</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.COMPLETED}>Completed</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.CANCELLED}>Cancelled</SelectItem>
+                                        <SelectItem value={ORDER_STATUSES.REFUNDED}>Refunded</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+
+                                  <div className="flex gap-2">
+                                    {order.status !== ORDER_STATUSES.SHIPPED && order.status !== ORDER_STATUSES.DELIVERED && order.status !== ORDER_STATUSES.COMPLETED && (
+                                      <Button
+                                        onClick={() => openFulfillmentModal(order)}
+                                        size="sm"
+                                        variant="default"
+                                      >
+                                        <Truck className="w-4 h-4 mr-1" />
+                                        Ship Order
+                                      </Button>
+                                    )}
+
+                                    {order.status === ORDER_STATUSES.SHIPPED && (
+                                      <Button
+                                        onClick={() => updateOrderStatus(order.id, ORDER_STATUSES.DELIVERED)}
+                                        size="sm"
+                                        variant="default"
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Mark as Delivered
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
                           </DialogContent>
                         </Dialog>
 
-                        {order.status !== 'fulfilled' && (
+                        {order.status !== ORDER_STATUSES.SHIPPED && order.status !== ORDER_STATUSES.DELIVERED && order.status !== ORDER_STATUSES.COMPLETED && (
                           <Button
-                            onClick={() => updateOrderStatus(order.id, 'fulfilled')}
+                            onClick={() => openFulfillmentModal(order)}
                             size="sm"
                             variant="default"
                           >
+                            <Truck className="w-4 h-4 mr-1" />
+                            Ship
+                          </Button>
+                        )}
+
+                        {order.status === ORDER_STATUSES.SHIPPED && order.tracking_number && (
+                          <Button
+                            onClick={() => updateOrderStatus(order.id, ORDER_STATUSES.DELIVERED)}
+                            size="sm"
+                            variant="outline"
+                          >
                             <CheckCircle className="w-4 h-4 mr-1" />
-                            Fulfill
+                            Mark Delivered
+                          </Button>
+                        )}
+
+                        {order.tracking_number && (
+                          <Button
+                            onClick={() => window.open(`https://auspost.com.au/mypost/track/#/details/${order.tracking_number}`, '_blank')}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <Package className="w-4 h-4 mr-1" />
+                            Track
                           </Button>
                         )}
                       </div>
@@ -376,6 +606,125 @@ export default function Orders() {
             )}
           </CardContent>
         </Card>
+
+        {/* Fulfillment Modal */}
+        <Dialog open={fulfillmentModalOpen} onOpenChange={setFulfillmentModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold">
+                Fulfill Order #{selectedOrder?.id.slice(-8)}
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedOrder && (
+              <div className="space-y-6">
+                {/* Order Summary */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Customer Information
+                    </h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="font-medium">{selectedOrder.customer_first_name} {selectedOrder.customer_last_name}</p>
+                      <p className="text-sm text-gray-600">{selectedOrder.customer_email}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Shipping Address
+                    </h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm">
+                        {selectedOrder.shipping_address_line1}<br/>
+                        {selectedOrder.shipping_city}, {selectedOrder.shipping_state} {selectedOrder.shipping_postcode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <ShoppingBag className="w-4 h-4" />
+                      Items Ordered
+                    </h3>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      {orderItems[selectedOrder.id] ? (
+                        <div className="space-y-2">
+                          {orderItems[selectedOrder.id].map((item) => (
+                            <div key={item.id} className="flex justify-between items-center">
+                              <span className="text-sm">{item.product_name} x{item.quantity}</span>
+                              <span className="text-sm font-medium">{formatCurrency(item.product_price * item.quantity)}</span>
+                            </div>
+                          ))}
+                          <Separator className="my-2" />
+                          <div className="flex justify-between items-center font-semibold">
+                            <span>Total</span>
+                            <span>{formatCurrency(selectedOrder.total)}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-600">Loading items...</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Tracking Number Input */}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="trackingNumber" className="text-base font-semibold">
+                      Australia Post Tracking Number *
+                    </Label>
+                    <Input
+                      id="trackingNumber"
+                      type="text"
+                      placeholder="e.g., 7XX XXX XXX XXX AU"
+                      value={trackingNumber}
+                      onChange={(e) => setTrackingNumber(e.target.value)}
+                      className="mt-2"
+                      disabled={submitting}
+                    />
+                    <p className="text-sm text-gray-600 mt-1">
+                      Enter the tracking number from Australia Post. This will be included in the shipping confirmation email.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={closeFulfillmentModal}
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleFulfillOrder}
+                    disabled={!trackingNumber.trim() || submitting}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Truck className="w-4 h-4 mr-2" />
+                        Mark as Fulfilled & Send Email
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

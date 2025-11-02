@@ -4,12 +4,33 @@ import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
+  console.log('🔧 Stripe Webhook Called:', {
+    method: req.method,
+    url: req.url,
+    hasSignature: !!req.headers.get('stripe-signature'),
+    timestamp: new Date().toISOString()
+  })
+
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  // Only accept POST requests for webhook
+  if (req.method !== 'POST') {
+    console.error('❌ Webhook called with wrong method:', req.method)
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: {
+        ...corsHeaders,
+        'Allow': 'POST, OPTIONS'
+      }
+    })
   }
 
   try {
@@ -140,16 +161,20 @@ serve(async (req) => {
         for (const item of orderItems) {
           console.log(`Marking product ${item.product_id} as sold`)
 
+          // Update both possible stock field names and set is_active to false
           const { error: productError } = await supabase
             .from('products')
             .update({
               in_stock: false,
-              stock_quantity: 0
+              stock_quantity: 0,
+              stock: 0,  // Also update this field name
+              is_active: false  // Mark as inactive/sold
             })
             .eq('id', item.product_id)
 
           if (productError) {
             console.error(`Error updating product ${item.product_id}:`, productError)
+            console.error('Product update error details:', JSON.stringify(productError, null, 2))
             // Don't throw error here - we want to continue with other products
           } else {
             console.log(`Product ${item.product_id} marked as sold successfully`)
@@ -157,6 +182,23 @@ serve(async (req) => {
         }
 
         console.log('Product stock updates completed')
+
+        // Send order confirmation email
+        console.log('Sending order confirmation email...')
+        try {
+          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+            body: { orderId: order.id }
+          })
+
+          if (emailError) {
+            console.error('Failed to send order confirmation email:', emailError)
+          } else {
+            console.log('Order confirmation email sent successfully:', emailResult)
+          }
+        } catch (emailError) {
+          console.error('Error sending order confirmation email:', emailError)
+          // Don't throw error - we don't want email failure to break the order process
+        }
 
         // Mark reservations as completed and release them
         const { error: reservationError } = await supabase

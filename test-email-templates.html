@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Email Templates</title>
+</head>
+<body>
+    <h1>Test Email Templates</h1>
+
+    <div style="margin: 20px 0;">
+        <h3>Test Order Confirmation Email</h3>
+        <button onclick="testOrderConfirmationEmail()">Send Order Confirmation Test Email</button>
+        <div id="confirmation-result"></div>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h3>Test Shipping Notification Email</h3>
+        <input type="text" id="tracking-number" placeholder="Enter tracking number" value="TEST123456789">
+        <button onclick="testShippingEmail()">Send Shipping Test Email</button>
+        <div id="shipping-result"></div>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <h3>Get Recent Order for Testing</h3>
+        <button onclick="getRecentOrder()">Get Most Recent Order</button>
+        <div id="order-info"></div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://kqshrevhtrusxrwkgdmd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtxc2hyZXZodHJ1c3hyd2tnZG1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODQ0NDcsImV4cCI6MjA3NDI2MDQ0N30.797cTDtt67n9rtpSjOGOawf6od5ETfcfbAftiR3qkJs'
+        );
+
+        let testOrderId = null;
+
+        async function getRecentOrder() {
+            const result = document.getElementById('order-info');
+            result.innerHTML = '<p>Getting recent order...</p>';
+
+            try {
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                if (error) throw error;
+
+                if (orders && orders.length > 0) {
+                    testOrderId = orders[0].id;
+                    result.innerHTML = `
+                        <p style="color: green;">✅ Found recent order:</p>
+                        <p><strong>Order ID:</strong> ${orders[0].id}</p>
+                        <p><strong>Customer:</strong> ${orders[0].customer_email}</p>
+                        <p><strong>Created:</strong> ${new Date(orders[0].created_at).toLocaleString()}</p>
+                        <p><strong>Total:</strong> $${orders[0].total}</p>
+                    `;
+                } else {
+                    result.innerHTML = '<p style="color: orange;">⚠️ No orders found. Create a test order first.</p>';
+                }
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testOrderConfirmationEmail() {
+            const result = document.getElementById('confirmation-result');
+            result.innerHTML = '<p>Sending order confirmation email...</p>';
+
+            if (!testOrderId) {
+                result.innerHTML = '<p style="color: red;">❌ Please get a recent order first</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
+                    body: { orderId: testOrderId }
+                });
+
+                if (error) throw error;
+
+                if (data && data.success) {
+                    result.innerHTML = `
+                        <p style="color: green;">✅ Order confirmation email sent successfully!</p>
+                        <p><strong>Message ID:</strong> ${data.messageId}</p>
+                        <p><strong>Sent to:</strong> ${data.customerEmail}</p>
+                        <p><strong>Order:</strong> #${data.orderShortId}</p>
+                    `;
+                } else {
+                    result.innerHTML = `<p style="color: red;">❌ Email failed: ${data?.error || 'Unknown error'}</p>`;
+                }
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testShippingEmail() {
+            const result = document.getElementById('shipping-result');
+            const trackingNumber = document.getElementById('tracking-number').value;
+
+            result.innerHTML = '<p>Sending shipping notification email...</p>';
+
+            if (!testOrderId) {
+                result.innerHTML = '<p style="color: red;">❌ Please get a recent order first</p>';
+                return;
+            }
+
+            if (!trackingNumber.trim()) {
+                result.innerHTML = '<p style="color: red;">❌ Please enter a tracking number</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.functions.invoke('send-shipping-email', {
+                    body: {
+                        orderId: testOrderId,
+                        trackingNumber: trackingNumber.trim()
+                    }
+                });
+
+                if (error) throw error;
+
+                if (data && data.success) {
+                    result.innerHTML = `
+                        <p style="color: green;">✅ Shipping notification email sent successfully!</p>
+                        <p><strong>Message ID:</strong> ${data.messageId}</p>
+                        <p><strong>Sent to:</strong> ${data.customerEmail}</p>
+                        <p><strong>Order:</strong> #${data.orderShortId}</p>
+                        <p><strong>Tracking:</strong> ${trackingNumber}</p>
+                    `;
+                } else {
+                    result.innerHTML = `<p style="color: red;">❌ Email failed: ${data?.error || 'Unknown error'}</p>`;
+                }
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-load recent order on page load
+        window.onload = function() {
+            getRecentOrder();
+        };
+    </script>
+</body>
+</html>

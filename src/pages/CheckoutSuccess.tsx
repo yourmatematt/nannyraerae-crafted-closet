@@ -1,19 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { CheckCircle, AlertCircle } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "sonner";
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { clearCart } = useCart();
-  const [pollCount, setPollCount] = useState(0);
 
   const paymentIntentId = searchParams.get('payment_intent');
   const sessionId = searchParams.get('session');
@@ -22,58 +18,6 @@ const CheckoutSuccess = () => {
     // Clear the cart after successful payment
     clearCart();
   }, [clearCart]);
-
-  // Poll for order creation by payment intent ID
-  const { data: order, isLoading, error } = useQuery({
-    queryKey: ['order-by-payment-intent', paymentIntentId],
-    queryFn: async () => {
-      if (!paymentIntentId) throw new Error('No payment intent ID');
-
-      console.log('Polling for order with payment intent:', paymentIntentId);
-
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('stripe_payment_intent_id', paymentIntentId)
-        .single();
-
-      if (error) {
-        console.log('Order not found yet, continuing to poll...');
-        throw error;
-      }
-
-      console.log('Order found:', data);
-      return data;
-    },
-    enabled: !!paymentIntentId,
-    retry: true,
-    retryDelay: 2000, // Poll every 2 seconds
-    refetchInterval: 2000, // Keep polling
-    refetchIntervalInBackground: true,
-  });
-
-  // Redirect to order confirmation once order is found
-  useEffect(() => {
-    if (order?.id) {
-      console.log('Order created! Redirecting to confirmation:', order.id);
-      toast.success('Order confirmed! Redirecting to order details...');
-      setTimeout(() => {
-        navigate(`/order-confirmation/${order.id}`);
-      }, 1000);
-    }
-  }, [order, navigate]);
-
-  // Timeout after 60 seconds of polling
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!order) {
-        console.log('Order creation timeout - showing fallback');
-        toast.error('Order processing is taking longer than expected. Please check your email for confirmation.');
-      }
-    }, 60000); // 60 seconds
-
-    return () => clearTimeout(timeout);
-  }, [order]);
 
   if (!paymentIntentId) {
     return (
@@ -106,25 +50,18 @@ const CheckoutSuccess = () => {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
-          {/* Processing Icon */}
-          <div className="w-20 h-20 mx-auto mb-8 bg-blue-100 rounded-full flex items-center justify-center">
-            {order ? (
-              <CheckCircle className="h-12 w-12 text-green-600" />
-            ) : (
-              <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
-            )}
+          {/* Success Icon */}
+          <div className="w-20 h-20 mx-auto mb-8 bg-green-100 rounded-full flex items-center justify-center">
+            <CheckCircle className="h-12 w-12 text-green-600" />
           </div>
 
-          {/* Processing Message */}
+          {/* Confirmed Message */}
           <h1 className="font-playfair text-4xl font-bold text-foreground mb-4">
-            {order ? 'Order Confirmed!' : 'Processing Your Order...'}
+            Order Confirmed! 🎉
           </h1>
 
           <p className="font-inter text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            {order
-              ? 'Your order has been confirmed and you\'ll be redirected to your order details shortly.'
-              : 'Your payment was successful! We\'re now processing your order and will redirect you to the confirmation page once it\'s ready.'
-            }
+            Thank you for your order! Your payment was successful and your order has been confirmed. You'll receive a tracking number via email within 1-2 business days once your item ships.
           </p>
 
           {/* Payment Confirmation */}
@@ -154,59 +91,62 @@ const CheckoutSuccess = () => {
             )}
 
             <div className="text-center">
-              {order ? (
-                <p className="text-green-600 font-medium">
-                  ✅ Order created successfully!
-                </p>
-              ) : (
-                <div className="flex items-center justify-center gap-2 text-blue-600">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <p className="font-medium">Creating your order...</p>
-                </div>
-              )}
+              <div className="text-green-600 flex items-center gap-2 justify-center">
+                <CheckCircle size={24} />
+                <span className="font-medium">Order confirmed and received!</span>
+              </div>
             </div>
           </div>
 
-          {/* What's Happening */}
-          {!order && (
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 mb-8">
-              <h3 className="font-playfair text-2xl font-bold text-blue-900 mb-4">
-                What's happening now?
-              </h3>
-              <div className="grid md:grid-cols-3 gap-6 text-left">
-                <div>
-                  <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mb-3">
-                    <span className="text-sm font-bold text-green-800">✓</span>
-                  </div>
-                  <h4 className="font-inter font-semibold text-blue-900 mb-2">Payment Processed</h4>
-                  <p className="font-inter text-sm text-blue-700">
-                    Your payment has been successfully processed by Stripe.
-                  </p>
+          {/* Order Complete Status */}
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-8 mb-8">
+            <h3 className="font-playfair text-2xl font-bold text-green-900 mb-4">
+              Order Complete
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6 text-left">
+              <div>
+                <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mb-3">
+                  <span className="text-sm font-bold text-green-800">✓</span>
                 </div>
-                <div>
-                  <div className="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center mb-3">
-                    <Loader2 className="w-4 h-4 animate-spin text-blue-800" />
-                  </div>
-                  <h4 className="font-inter font-semibold text-blue-900 mb-2">Creating Order</h4>
-                  <p className="font-inter text-sm text-blue-700">
-                    We're now creating your order record and reserving your items.
-                  </p>
+                <h4 className="font-inter font-semibold text-green-900 mb-2">Payment Processed</h4>
+                <p className="font-inter text-sm text-green-700">
+                  Your payment has been successfully processed by Stripe.
+                </p>
+              </div>
+              <div>
+                <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mb-3">
+                  <span className="text-sm font-bold text-green-800">✓</span>
                 </div>
-                <div>
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mb-3">
-                    <span className="text-sm font-bold text-gray-600">3</span>
-                  </div>
-                  <h4 className="font-inter font-semibold text-blue-900 mb-2">Confirmation</h4>
-                  <p className="font-inter text-sm text-blue-700">
-                    You'll receive your order confirmation via email shortly.
-                  </p>
+                <h4 className="font-inter font-semibold text-green-900 mb-2">Order Confirmed</h4>
+                <p className="font-inter text-sm text-green-700">
+                  Your order has been confirmed and Nanny Rae Rae has been notified.
+                </p>
+              </div>
+              <div>
+                <div className="w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mb-3">
+                  <span className="text-sm font-bold text-green-800">✓</span>
                 </div>
+                <h4 className="font-inter font-semibold text-green-900 mb-2">Email Sent</h4>
+                <p className="font-inter text-sm text-green-700">
+                  Order confirmation sent. Tracking number will arrive within 1-2 business days.
+                </p>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Fallback Button */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          {/* What's Next Timeline */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <h3 className="font-semibold text-lg mb-2">📦 What's Next?</h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              <li>✉️ <strong>Now:</strong> Order confirmation email sent</li>
+              <li>🎨 <strong>1-2 days:</strong> Nanny Rae Rae handcrafts your order</li>
+              <li>📮 <strong>2-3 days:</strong> Tracking number sent via email</li>
+              <li>🏠 <strong>5-7 days:</strong> Delivered to your door</li>
+            </ul>
+          </div>
+
+          {/* Action Button */}
+          <div className="flex justify-center">
             <Button
               size="lg"
               onClick={() => navigate('/')}
@@ -214,16 +154,6 @@ const CheckoutSuccess = () => {
             >
               Continue Shopping
             </Button>
-            {order && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => navigate(`/order-confirmation/${order.id}`)}
-                className="font-inter font-medium px-8"
-              >
-                View Order Details
-              </Button>
-            )}
           </div>
         </div>
       </div>

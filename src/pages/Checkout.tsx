@@ -15,6 +15,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginModal } from '@/components/auth/LoginModal';
+// import { AddressAutocomplete } from '@/components/AddressAutocomplete'; // Commented out for now
 import { cn } from '@/lib/utils';
 
 interface CustomerDetails {
@@ -114,6 +115,24 @@ const Checkout = () => {
     }
   };
 
+  // Commented out for now - Google Places API functionality
+  /*
+  const handleAddressSelect = (address: any) => {
+    setCustomerDetails(prev => ({
+      ...prev,
+      address: {
+        line1: address.line1 || '',
+        line2: address.line2 || '',
+        city: address.city || '',
+        state: address.state || '',
+        postalCode: address.postalCode || '',
+        country: address.country || 'AU'
+      }
+    }));
+    toast.success('Address filled from Google Places');
+  };
+  */
+
   const validateForm = (): boolean => {
     const { email, name, phone, address } = customerDetails;
 
@@ -137,6 +156,15 @@ const Checkout = () => {
 
   const createPaymentIntent = async () => {
     try {
+      console.log('🔧 Creating payment intent with data:', {
+        amount: Math.round(orderSummary.total * 100),
+        currency: 'aud',
+        session_id: sessionId,
+        customer_details: customerDetails,
+        cart_items: items,
+        order_summary: orderSummary
+      });
+
       const { data, error } = await supabase.functions.invoke('create-payment-intent', {
         body: {
           amount: Math.round(orderSummary.total * 100), // Convert to cents
@@ -148,13 +176,26 @@ const Checkout = () => {
         }
       });
 
+      console.log('🔧 Supabase function response:', { data, error });
+
       if (error) {
+        console.error('❌ Supabase function error:', error);
         throw error;
       }
 
+      if (!data || !data.client_secret) {
+        console.error('❌ No client_secret in response:', data);
+        throw new Error('Invalid payment intent response');
+      }
+
+      console.log('✅ Payment intent created successfully:', {
+        payment_intent_id: data.payment_intent_id,
+        client_secret: data.client_secret ? 'present' : 'missing'
+      });
+
       return data;
     } catch (error) {
-      console.error('Error creating payment intent:', error);
+      console.error('❌ Error creating payment intent:', error);
       throw new Error('Failed to create payment intent');
     }
   };
@@ -171,13 +212,24 @@ const Checkout = () => {
 
     try {
       // Create payment intent
-      const { client_secret } = await createPaymentIntent();
+      console.log('🔧 Starting payment process...');
+      const paymentIntentResponse = await createPaymentIntent();
+      const { client_secret } = paymentIntentResponse;
+
+      console.log('🔧 Confirming payment with client_secret:', client_secret);
 
       // Confirm payment with Stripe
       const cardElement = elements!.getElement(CardElement);
+
+      if (!cardElement) {
+        throw new Error('Card element not found');
+      }
+
+      console.log('🔧 Card element found, confirming payment...');
+
       const { error, paymentIntent } = await stripe!.confirmCardPayment(client_secret, {
         payment_method: {
-          card: cardElement!,
+          card: cardElement,
           billing_details: {
             name: customerDetails.name,
             email: customerDetails.email,
@@ -193,6 +245,8 @@ const Checkout = () => {
           }
         }
       });
+
+      console.log('🔧 Stripe confirmCardPayment response:', { error, paymentIntent });
 
       if (error) {
         toast.error(error.message || 'Payment failed. Please try again.');
@@ -361,6 +415,19 @@ const Checkout = () => {
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Shipping Address</h3>
                     <div className="space-y-4">
+                      {/* Google Address Autocomplete - Commented out for now */}
+                      {/*
+                      <AddressAutocomplete
+                        onAddressSelect={handleAddressSelect}
+                        placeholder="Start typing your address for quick lookup..."
+                        className="w-full"
+                      />
+
+                      <div className="border-t pt-4">
+                        <p className="text-sm text-gray-600 mb-3">Or fill in manually:</p>
+                      </div>
+                      */}
+
                       <div>
                         <Label htmlFor="line1">Address Line 1 *</Label>
                         <Input

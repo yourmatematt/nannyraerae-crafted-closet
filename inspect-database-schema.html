@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Schema Inspector</title>
+</head>
+<body>
+    <h1>Database Schema Inspector</h1>
+
+    <div>
+        <h3>Check Orders Table Schema</h3>
+        <button onclick="inspectOrdersSchema()">Inspect Orders Table Columns</button>
+        <div id="schema-result"></div>
+    </div>
+
+    <div>
+        <h3>Check Products Table Schema</h3>
+        <button onclick="inspectProductsSchema()">Inspect Products Table Columns</button>
+        <div id="products-result"></div>
+    </div>
+
+    <div>
+        <h3>Test Order Creation with Different Field Names</h3>
+        <button onclick="testOrderCreationV1()">Test with shipping_address (JSONB)</button>
+        <button onclick="testOrderCreationV2()">Test with separate shipping columns</button>
+        <div id="creation-result"></div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = window.supabase.createClient(
+            'https://kqshrevhtrusxrwkgdmd.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtxc2hyZXZodHJ1c3hyd2tnZG1kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODQ0NDcsImV4cCI6MjA3NDI2MDQ0N30.797cTDtt67n9rtpSjOGOawf6od5ETfcfbAftiR3qkJs'
+        );
+
+        async function inspectOrdersSchema() {
+            const result = document.getElementById('schema-result');
+            result.innerHTML = '<p>Inspecting orders table schema...</p>';
+
+            try {
+                // Try to get the schema information from Supabase
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .limit(1);
+
+                if (error && error.message.includes('schema cache')) {
+                    result.innerHTML = `<p style="color: red;">❌ Schema cache error: ${error.message}</p>`;
+                    return;
+                }
+
+                if (error) {
+                    result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    const columns = Object.keys(data[0]);
+                    result.innerHTML = `
+                        <p style="color: green;">✅ Orders table accessible</p>
+                        <p><strong>Columns found:</strong></p>
+                        <ul>
+                            ${columns.map(col => `<li>${col}</li>`).join('')}
+                        </ul>
+                        <p><strong>Sample record:</strong></p>
+                        <pre>${JSON.stringify(data[0], null, 2)}</pre>
+                    `;
+                } else {
+                    result.innerHTML = `<p style="color: orange;">⚠️ Orders table is empty, but accessible. Let's see what columns we can insert...</p>`;
+                }
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Exception: ${error.message}</p>`;
+            }
+        }
+
+        async function inspectProductsSchema() {
+            const result = document.getElementById('products-result');
+            result.innerHTML = '<p>Inspecting products table schema...</p>';
+
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .limit(1);
+
+                if (error) {
+                    result.innerHTML = `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                    return;
+                }
+
+                const columns = Object.keys(data[0]);
+                result.innerHTML = `
+                    <p style="color: green;">✅ Products table accessible</p>
+                    <p><strong>Columns:</strong> ${columns.join(', ')}</p>
+                `;
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ Exception: ${error.message}</p>`;
+            }
+        }
+
+        async function testOrderCreationV1() {
+            const result = document.getElementById('creation-result');
+            result.innerHTML = '<p>Testing order creation with shipping_address JSONB...</p>';
+
+            try {
+                const { data: products } = await supabase
+                    .from('products')
+                    .select('*')
+                    .limit(1);
+
+                if (!products || products.length === 0) {
+                    throw new Error('No products found');
+                }
+
+                const product = products[0];
+
+                const orderData = {
+                    customer_email: 'test@example.com',
+                    customer_name: 'Test Customer V1',
+                    customer_phone: '+61400000000',
+                    shipping_address: {
+                        line1: '123 Test St',
+                        line2: 'Unit 5',
+                        city: 'Sydney',
+                        state: 'NSW',
+                        postal_code: '2000',
+                        country: 'AU'
+                    },
+                    subtotal: product.price,
+                    shipping_cost: 0,
+                    tax_amount: 0,
+                    total_amount: product.price,
+                    stripe_payment_intent_id: 'pi_test_v1_' + Date.now(),
+                    status: 'confirmed'
+                };
+
+                const { data: order, error } = await supabase
+                    .from('orders')
+                    .insert(orderData)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                result.innerHTML = `<p style="color: green;">✅ V1 (JSONB) succeeded! Order ID: ${order.id}</p>`;
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ V1 (JSONB) failed: ${error.message}</p>`;
+            }
+        }
+
+        async function testOrderCreationV2() {
+            const result = document.getElementById('creation-result');
+            result.innerHTML = '<p>Testing order creation with separate shipping columns...</p>';
+
+            try {
+                const { data: products } = await supabase
+                    .from('products')
+                    .select('*')
+                    .limit(1);
+
+                if (!products || products.length === 0) {
+                    throw new Error('No products found');
+                }
+
+                const product = products[0];
+
+                const orderData = {
+                    customer_email: 'test@example.com',
+                    customer_first_name: 'Test',
+                    customer_last_name: 'Customer V2',
+                    customer_phone: '+61400000000',
+                    shipping_address_line1: '123 Test Street',
+                    shipping_address_line2: 'Apartment 4B',
+                    shipping_city: 'Sydney',
+                    shipping_state: 'NSW',
+                    shipping_postcode: '2000',
+                    shipping_country: 'AU',
+                    subtotal: product.price,
+                    shipping_cost: 0,
+                    gst: 0,
+                    total: product.price,
+                    stripe_payment_intent_id: 'pi_test_v2_' + Date.now(),
+                    status: 'completed',
+                    session_id: 'test_v2_' + Date.now()
+                };
+
+                const { data: order, error } = await supabase
+                    .from('orders')
+                    .insert(orderData)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                result.innerHTML = `<p style="color: green;">✅ V2 (separate columns) succeeded! Order ID: ${order.id}</p>`;
+
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ V2 (separate columns) failed: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

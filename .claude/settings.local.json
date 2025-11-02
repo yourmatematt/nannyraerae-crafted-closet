@@ -16,7 +16,11 @@
       "Bash(git commit:*)",
       "Bash(node:*)",
       "Bash(supabase functions deploy:*)",
-      "Bash(supabase status:*)"
+      "Bash(supabase status:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run:*)",
+      "Bash(supabase db:*)",
+      "Bash(supabase secrets:*)"
     ],
     "deny": [],
     "ask": []

@@ -21,7 +21,12 @@ interface Order {
   status: string;
   total: number;
   order_items: OrderItem[];
-  shipping_address?: any;
+  shipping_address_line1?: string;
+  shipping_address_line2?: string;
+  shipping_city?: string;
+  shipping_state?: string;
+  shipping_postcode?: string;
+  shipping_country?: string;
   payment_method?: string;
 }
 
@@ -234,16 +239,17 @@ export function AccountDashboard({ user, onClose }: AccountDashboardProps) {
                         </div>
 
                         {/* Additional Info */}
-                        {order.shipping_address && (
+                        {order.shipping_address_line1 && (
                           <div>
                             <h5 className="font-inter font-medium mb-2 flex items-center gap-2">
                               <MapPin className="w-4 h-4" />
                               Shipping Address
                             </h5>
                             <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
-                              {typeof order.shipping_address === 'string'
-                                ? order.shipping_address
-                                : JSON.stringify(order.shipping_address)}
+                              {order.shipping_address_line1}<br/>
+                              {order.shipping_address_line2 && <>{order.shipping_address_line2}<br/></>}
+                              {order.shipping_city}, {order.shipping_state} {order.shipping_postcode}<br/>
+                              {order.shipping_country}
                             </div>
                           </div>
                         )}
