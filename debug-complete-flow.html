@@ -226,7 +226,7 @@
 
                 if (orderError) throw orderError;
 
-                // Create order item
+                // Create order item (using correct column names)
                 const { error: itemError } = await supabase
                     .from('order_items')
                     .insert({
@@ -234,8 +234,8 @@
                         product_id: product.id,
                         product_name: product.name,
                         quantity: 1,
-                        unit_price: product.price,
-                        total_price: product.price
+                        unit_price: product.price
+                        // Removed total_price as it doesn't exist in schema
                     });
 
                 if (itemError) throw itemError;
