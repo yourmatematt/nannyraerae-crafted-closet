@@ -138,7 +138,7 @@ serve(async (req) => {
           order_id: order.id,
           product_id: item.productId,
           product_name: item.name,
-          product_price: Number(item.price),
+          unit_price: Number(item.price),
           product_image: item.imageUrl,
           quantity: Number(item.quantity || 1)
         }))
@@ -161,13 +161,11 @@ serve(async (req) => {
         for (const item of orderItems) {
           console.log(`Marking product ${item.product_id} as sold`)
 
-          // Update both possible stock field names and set is_active to false
+          // Update stock fields and set is_active to false
           const { error: productError } = await supabase
             .from('products')
             .update({
-              in_stock: false,
-              stock_quantity: 0,
-              stock: 0,  // Also update this field name
+              stock: 0,  // Set stock to 0
               is_active: false  // Mark as inactive/sold
             })
             .eq('id', item.product_id)
