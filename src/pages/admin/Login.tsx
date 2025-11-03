@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
 import AdminDebugger from '@/components/admin/AdminDebugger'
+import SEO from '@/components/SEO'
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('')
@@ -99,6 +100,11 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <SEO
+        title="Admin Login"
+        description="Admin access only"
+        noIndex={true}
+      />
       <div className="w-full max-w-4xl space-y-6">
         <Card className="w-full max-w-md mx-auto">
           <CardHeader>

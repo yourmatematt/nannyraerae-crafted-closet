@@ -12,6 +12,7 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SEO from "@/components/SEO";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
@@ -405,6 +406,12 @@ const Collections = () => {
       "min-h-screen bg-gray-50",
       items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
+      <SEO
+        title="Shop All Collection | Handmade Children's Clothing"
+        description="Browse our full collection of handmade children's clothing. Dresses, rompers, accessories and more. Each piece lovingly crafted in Australia. Filter by age, style, and size."
+        keywords="handmade children's clothing collection, kids clothes Australia, baby dresses, rompers, children's accessories, handcrafted clothing"
+        canonicalUrl="/collection"
+      />
       <Navigation />
 
       {/* Page Header */}

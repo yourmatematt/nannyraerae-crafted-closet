@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import SEO from "@/components/SEO";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
@@ -279,6 +280,12 @@ const NewBaby = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEO
+        title="New Baby Gifts | Handmade Baby Clothing & Accessories"
+        description="Welcome a new arrival with beautiful handmade baby gifts. Soft, comfortable clothing for newborns and babies. Australian made with love and care."
+        keywords="new baby gifts, handmade baby clothes, newborn clothing, baby gift ideas, Australian made baby wear, baby shower gifts"
+        canonicalUrl="/gifts/new-baby"
+      />
       <Navigation />
 
       {/* Memoized Filter Section */}

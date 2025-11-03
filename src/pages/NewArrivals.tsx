@@ -12,6 +12,7 @@ import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
+import SEO from "@/components/SEO";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
@@ -193,6 +194,12 @@ const NewArrivals = () => {
       "min-h-screen bg-gray-50",
       items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
+      <SEO
+        title="New Arrivals | Latest Handmade Children's Clothing"
+        description="Shop the latest handmade children's pieces. New designs added weekly. Australian made with love. Limited edition styles for babies and kids up to 5 years."
+        keywords="new arrivals children's clothing, latest kids fashion, handmade baby clothes, new designs, limited edition children's wear"
+        canonicalUrl="/new-arrivals"
+      />
       <Navigation />
 
       <HeaderSection />

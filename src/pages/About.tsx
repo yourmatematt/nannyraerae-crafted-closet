@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { cn } from "@/lib/utils";
+import SEO from "@/components/SEO";
 
 const About = () => {
   const navigate = useNavigate();
@@ -78,6 +79,12 @@ const About = () => {
       "min-h-screen bg-gray-50",
       items.length > 0 ? "pt-[152px] sm:pt-[128px] lg:pt-[144px]" : ""
     )}>
+      <SEO
+        title="About Nanny Rae Rae | Handmade in Regional Australia"
+        description="Meet the maker behind the magic. Learn about Nanny Rae Rae and her passion for creating quality handmade children's clothing in regional Australia with love and care."
+        keywords="Nanny Rae Rae, handmade clothing maker, regional Australia, children's clothing designer, sustainable fashion, Australian made"
+        canonicalUrl="/about"
+      />
       <Navigation />
       
       {/* Hero Section */}
