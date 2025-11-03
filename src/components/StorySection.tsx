@@ -10,8 +10,8 @@ const StorySection = () => {
           <div className="relative">
             <div className="aspect-[4/3] bg-muted rounded-2xl overflow-hidden shadow-medium relative">
               <img
-                src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/business-joy.png"
-                alt="Happy children wearing Nanny Rae Rae's handmade clothing, showing the joy that drives the business from my sewing room to your family"
+                src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/from-my-sewing-room.png"
+                alt="Nanny Rae Rae's handmade clothing, showing the joy that drives the business from my sewing room to your family"
                 className="w-full h-full object-cover"
                 loading="lazy"
               />

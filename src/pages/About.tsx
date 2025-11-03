@@ -135,8 +135,8 @@ const About = () => {
               </div>
               <div className="order-1 lg:order-2">
                 <img
-                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/started-with-love.jpg"
-                  alt="Grandmother Rae with her grandchildren wearing her first handmade creations, showing the love and care that started it all"
+                  src="https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/started-with-love.jpeg"
+                  alt="Grandmother Rae with her grandchildren wearing her handmade creations, showing the love and care that started it all"
                   className="w-full aspect-[4/3] object-cover rounded-2xl shadow-medium"
                   loading="lazy"
                 />
