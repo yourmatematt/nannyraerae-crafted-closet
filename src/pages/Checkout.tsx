@@ -229,6 +229,7 @@ const Checkout = () => {
 
       console.log('🔧 Client secret:', client_secret);
 console.log('🔧 Client secret type:', typeof client_secret);
+console.log('🔧 FRONTEND Stripe Key:', import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
       const { error, paymentIntent } = await stripe!.confirmCardPayment(client_secret, {
         payment_method: {
