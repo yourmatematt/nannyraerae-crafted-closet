@@ -106,9 +106,9 @@ serve(async (req) => {
         shipping_postcode: customerDetails.address?.postalCode,
         shipping_country: customerDetails.address?.country,
         subtotal: Number(orderSummary.subtotal || 0),
-        gst: Number(orderSummary.tax || 0),
+        tax_amount: Number(orderSummary.tax || 0),
         shipping_cost: Number(orderSummary.shipping || 0),
-        total: Number(orderSummary.total || 0),
+         total: (orderSummary.amount_total || 0) / 100,
         status: 'completed'
       }
 
