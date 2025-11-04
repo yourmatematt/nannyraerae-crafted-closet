@@ -108,7 +108,7 @@ serve(async (req) => {
         subtotal: Number(orderSummary.subtotal || 0),
         tax_amount: Number(orderSummary.tax || 0),
         shipping_cost: Number(orderSummary.shipping || 0),
-         total: (orderSummary.amount_total || 0) / 100,
+         total: (sessionId.amount_total || 0) / 100,
         status: 'completed'
       }
 
