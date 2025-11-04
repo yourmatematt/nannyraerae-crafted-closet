@@ -93,12 +93,7 @@ serve(async (req) => {
 
       // Create order with proper schema
       const orderData = {
-        session_id: sessionId,
         stripe_payment_intent_id: paymentIntent.id,
-        customer_email: customerDetails.email,
-        customer_first_name: firstName,
-        customer_last_name: lastName,
-        customer_phone: customerDetails.phone,
         shipping_address_line1: customerDetails.address?.line1,
         shipping_address_line2: customerDetails.address?.line2 || null,
         shipping_city: customerDetails.address?.city,
@@ -106,10 +101,10 @@ serve(async (req) => {
         shipping_postcode: customerDetails.address?.postalCode,
         shipping_country: customerDetails.address?.country,
         subtotal: Number(orderSummary.subtotal || 0),
-        tax_amount: Number(orderSummary.tax || 0),
+        gst_amount: Number(orderSummary.tax || 0),
         shipping_cost: Number(orderSummary.shipping || 0),
-         total: (sessionId.amount_total || 0) / 100,
-        status: 'completed'
+        total_amount: Number(orderSummary.total || 0),
+        status: 'pending'
       }
 
       console.log('Order data to insert:', JSON.stringify(orderData, null, 2))
@@ -137,10 +132,8 @@ serve(async (req) => {
         const orderItems = cartItems.map((item: any) => ({
           order_id: order.id,
           product_id: item.productId,
-          product_name: item.name,
-          unit_price: Number(item.price),
-          product_image: item.imageUrl,
-          quantity: Number(item.quantity || 1)
+          price_at_purchase: Number(item.price),
+          currency_at_purchase: 'AUD'
         }))
 
         console.log('Order items to insert:', JSON.stringify(orderItems, null, 2))

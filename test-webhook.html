@@ -58,9 +58,6 @@
                 const { data: order, error: orderError } = await supabase
                     .from('orders')
                     .insert({
-                        customer_email: 'test@example.com',
-                        customer_name: 'Test Customer',
-                        customer_phone: '+61400000000',
                         shipping_address_line1: '123 Test St',
                         shipping_address_line2: 'Unit 5',
                         shipping_city: 'Sydney',
@@ -69,10 +66,10 @@
                         shipping_country: 'AU',
                         subtotal: product.price,
                         shipping_cost: 0,
-                        tax_amount: 0,
+                        gst_amount: 0,
                         total_amount: product.price,
                         stripe_payment_intent_id: 'pi_test_manual_' + Date.now(),
-                        status: 'confirmed'
+                        status: 'pending'
                     })
                     .select()
                     .single();
@@ -85,10 +82,8 @@
                     .insert({
                         order_id: order.id,
                         product_id: product.id,
-                        product_name: product.name,
-                        quantity: 1,
-                        unit_price: product.price,
-                        total_price: product.price
+                        price_at_purchase: product.price,
+                        currency_at_purchase: 'AUD'
                     });
 
                 if (itemError) throw itemError;
