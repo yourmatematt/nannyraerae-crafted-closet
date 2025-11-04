@@ -1,36 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
-  console.log('🔧 Stripe Webhook Called:', {
-    method: req.method,
-    url: req.url,
-    hasSignature: !!req.headers.get('stripe-signature'),
-    timestamp: new Date().toISOString()
-  })
-
-  // Handle CORS preflight
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
-  }
-
-  // Only accept POST requests for webhook
-  if (req.method !== 'POST') {
-    console.error('❌ Webhook called with wrong method:', req.method)
-    return new Response('Method not allowed', {
-      status: 405,
-      headers: {
-        ...corsHeaders,
-        'Allow': 'POST, OPTIONS'
-      }
-    })
   }
 
   try {
@@ -134,7 +114,7 @@ serve(async (req) => {
       if (cartItems.length > 0) {
         console.log('Creating order items:', cartItems.length)
 
-        // Create order items with proper schema
+        // Create order items
         const orderItems = cartItems.map((item: any) => ({
           order_id: order.id,
           product_id: item.productId,
@@ -143,8 +123,6 @@ serve(async (req) => {
           quantity: Number(item.quantity || 1),
           product_image: item.imageUrl
         }))
-
-        console.log('Order items to insert:', JSON.stringify(orderItems, null, 2))
 
         const { error: itemsError } = await supabase
           .from('order_items')
@@ -157,91 +135,30 @@ serve(async (req) => {
 
         console.log('Order items created successfully')
 
-        // Update each product to mark as sold
-        console.log('Updating product stock status...')
+        // Update products to mark as sold
         for (const item of orderItems) {
-          console.log(`Marking product ${item.product_id} as sold`)
-
-          // Update stock fields and set is_active to false
           const { error: productError } = await supabase
             .from('products')
             .update({
-              stock: 0,  // Set stock to 0
-              is_active: false  // Mark as inactive/sold
+              stock: 0,
+              is_active: false
             })
             .eq('id', item.product_id)
 
           if (productError) {
             console.error(`Error updating product ${item.product_id}:`, productError)
-            console.error('Product update error details:', JSON.stringify(productError, null, 2))
-            // Don't throw error here - we want to continue with other products
-          } else {
-            console.log(`Product ${item.product_id} marked as sold successfully`)
           }
         }
-
-        console.log('Product stock updates completed')
 
         // Send order confirmation email
-        console.log('Sending order confirmation email...')
         try {
-          const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-order-confirmation', {
+          await supabase.functions.invoke('send-order-confirmation', {
             body: { orderId: order.id }
           })
-
-          if (emailError) {
-            console.error('Failed to send order confirmation email:', emailError)
-          } else {
-            console.log('Order confirmation email sent successfully:', emailResult)
-          }
+          console.log('Order confirmation email sent')
         } catch (emailError) {
-          console.error('Error sending order confirmation email:', emailError)
-          // Don't throw error - we don't want email failure to break the order process
+          console.error('Error sending email:', emailError)
         }
-
-        // Mark reservations as completed and release them
-        const { error: reservationError } = await supabase
-          .from('cart_reservations')
-          .update({ is_expired: true })
-          .eq('session_id', sessionId)
-
-        if (reservationError) {
-          console.error('Error updating reservations:', reservationError)
-        }
-
-        console.log('Updated reservations for session:', sessionId)
-      }
-    } else if (event.type === 'payment_intent.payment_failed') {
-      const paymentIntent = event.data.object
-      const metadata = paymentIntent.metadata
-
-      console.log('Payment failed for session:', metadata.session_id)
-
-      // Get reservations
-      const { data: reservations } = await supabase
-        .from('cart_reservations')
-        .select('product_id')
-        .eq('session_id', metadata.session_id)
-
-      if (reservations && reservations.length > 0) {
-        // Release reservations
-        await supabase
-          .from('cart_reservations')
-          .update({ status: 'expired', is_expired: true })
-          .eq('session_id', metadata.session_id)
-
-        // Release products
-        for (const reservation of reservations) {
-          await supabase
-            .from('products')
-            .update({
-              reserved_until: null,
-              reserved_by_session: null,
-            })
-            .eq('id', reservation.product_id)
-        }
-
-        console.log('Released reservations after payment failure')
       }
     }
 
