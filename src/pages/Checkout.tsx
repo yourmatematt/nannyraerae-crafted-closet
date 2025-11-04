@@ -227,6 +227,9 @@ const Checkout = () => {
 
       console.log('🔧 Card element found, confirming payment...');
 
+      console.log('🔧 Client secret:', client_secret);
+console.log('🔧 Client secret type:', typeof client_secret);
+
       const { error, paymentIntent } = await stripe!.confirmCardPayment(client_secret, {
         payment_method: {
           card: cardElement,
