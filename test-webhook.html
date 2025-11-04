@@ -82,8 +82,10 @@
                     .insert({
                         order_id: order.id,
                         product_id: product.id,
-                        price_at_purchase: product.price,
-                        currency_at_purchase: 'AUD'
+                        product_name: product.name,
+                        product_price: product.price,
+                        quantity: 1,
+                        product_image: product.image_url
                     });
 
                 if (itemError) throw itemError;
