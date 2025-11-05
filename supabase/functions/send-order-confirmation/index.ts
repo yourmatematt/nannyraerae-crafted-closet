@@ -26,7 +26,7 @@ serve(async (req) => {
     // Environment variables for Brevo
     const brevoApiKey = Deno.env.get('BREVO_API_KEY')
     const brevoConfirmationTemplateId = Deno.env.get('BREVO_CONFIRMATION_TEMPLATE_ID')
-    const brevoFromEmail = Deno.env.get('BREVO_FROM_EMAIL') || 'hello@bynannyraerae.com.au'
+    const brevoFromEmail = Deno.env.get('BREVO_FROM_EMAIL') || 'orders@bynannyraerae.com.au'
     const brevoFromName = Deno.env.get('BREVO_FROM_NAME') || 'Nanny Rae Rae'
 
     if (!brevoApiKey || !brevoConfirmationTemplateId) {
