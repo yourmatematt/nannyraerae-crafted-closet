@@ -66,8 +66,8 @@
                         shipping_country: 'AU',
                         subtotal: product.price,
                         shipping_cost: 0,
-                        gst_amount: 0,
-                        total_amount: product.price,
+                        tax_amount: 0,
+                        total: product.price,
                         stripe_payment_intent_id: 'pi_test_manual_' + Date.now(),
                         status: 'pending'
                     })

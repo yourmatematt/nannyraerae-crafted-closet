@@ -35,12 +35,10 @@ interface CustomerDetails {
 interface OrderSummary {
   subtotal: number;
   shipping: number;
-  tax: number;
   total: number;
 }
 
 const SHIPPING_COST = 12.00; // Fixed shipping cost
-const TAX_RATE = 0.10; // 10% tax rate
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -89,10 +87,9 @@ const Checkout = () => {
   const calculateOrderSummary = (): OrderSummary => {
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const shipping = subtotal > 100 ? 0 : SHIPPING_COST; // Free shipping over $100
-    const tax = subtotal * TAX_RATE;
-    const total = subtotal + shipping + tax;
+    const total = subtotal + shipping;
 
-    return { subtotal, shipping, tax, total };
+    return { subtotal, shipping, total };
   };
 
   const orderSummary = calculateOrderSummary();
@@ -589,10 +586,6 @@ console.log('🔧 FRONTEND Stripe Key:', import.meta.env.VITE_STRIPE_PUBLISHABLE
                         `$${orderSummary.shipping.toFixed(2)}`
                       )}
                     </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tax (GST)</span>
-                    <span>${orderSummary.tax.toFixed(2)}</span>
                   </div>
                 </div>
 
