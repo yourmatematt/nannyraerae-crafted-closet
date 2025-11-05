@@ -87,7 +87,6 @@ serve(async (req) => {
         shipping_postcode: customerDetails.address?.postalCode,
         shipping_country: customerDetails.address?.country || 'Australia',
         subtotal: Number(orderSummary.subtotal || 0),
-        tax_amount: 0,
         shipping_cost: Number(orderSummary.shipping || 0),
         total: Number(orderSummary.total || 0),
         status: 'pending'
