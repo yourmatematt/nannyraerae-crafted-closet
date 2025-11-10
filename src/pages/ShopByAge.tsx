@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
@@ -8,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import type { Product } from "@/types";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
@@ -27,6 +29,7 @@ interface Product {
 const ShopByAge = () => {
   const { ageGroup } = useParams();
   const { addToCart } = useCart();
+  const [categoryImages, setCategoryImages] = useState({});
   
   const ageData = {
     "3mths": {
@@ -80,6 +83,40 @@ const ShopByAge = () => {
   };
 
   const currentAge = ageData[ageGroup as keyof typeof ageData] || ageData["1yr"];
+
+  useEffect(() => {
+    fetchAgeGroupImages();
+  }, []);
+
+  const fetchAgeGroupImages = async () => {
+    try {
+      const ageGroups = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'];
+      const imageMap = {};
+
+      for (const age of ageGroups) {
+        try {
+          const { data: recentProduct } = await supabase
+            .from('products')
+            .select('image_url')
+            .gt('stock', 0)
+            .eq('age_group', age)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (recentProduct && recentProduct.length > 0 && recentProduct[0].image_url) {
+            imageMap[age] = recentProduct[0].image_url;
+          }
+        } catch (imageError) {
+          console.error(`Error fetching image for age group ${age}:`, imageError);
+        }
+      }
+
+      console.log('Age group images:', imageMap);
+      setCategoryImages(imageMap);
+    } catch (error) {
+      console.error('Error fetching age group images:', error);
+    }
+  };
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['productsByAge', ageGroup],

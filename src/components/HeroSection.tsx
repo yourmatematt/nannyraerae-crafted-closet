@@ -49,7 +49,7 @@ const HeroSection = () => {
                   className="border-primary text-primary hover:bg-primary hover:text-primary-foreground font-inter font-semibold px-8 py-4 text-lg rounded-full"
                   onClick={() => navigate('/about')}
                 >
-                  Our Story
+                  About Nanny Rae Rae
                 </Button>
               </div>
             </div>

@@ -72,8 +72,17 @@ const Collections = () => {
   // Handle URL search parameters on component mount
   useEffect(() => {
     const sizeParam = searchParams.get('size');
-    if (sizeParam) {
-      // Valid size values that match our age group options
+    const ageParam = searchParams.get('age');
+
+    // Check for age parameter (new format)
+    if (ageParam) {
+      const validAges = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'];
+      if (validAges.includes(ageParam)) {
+        setSelectedAgeGroup(ageParam);
+      }
+    }
+    // Fallback to size parameter (legacy format)
+    else if (sizeParam) {
       const validSizes = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'];
       if (validSizes.includes(sizeParam)) {
         setSelectedAgeGroup(sizeParam);
@@ -88,8 +97,7 @@ const Collections = () => {
       let query = supabase
         .from('products')
         .select('*')
-        .eq('is_active', true)
-        .eq('stock', 1);
+        .gt('stock', 0);
 
       // Apply category filter
       if (selectedCategory !== 'all') {

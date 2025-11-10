@@ -26,7 +26,6 @@ const productSchema = z.object({
   price: z.number().min(1, 'Price must be greater than 0'),
   product_type: z.string().min(1, 'Product type is required'),
   gender: z.string().optional(),
-  collection: z.string().optional(),
   gift_category: z.string().optional(),
   is_gift_idea: z.boolean().optional()
 })
@@ -62,7 +61,6 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
     resolver: zodResolver(productSchema),
     defaultValues: {
       age_group: '1yr',
-      collection: '',
       gift_category: '',
       is_gift_idea: false,
       ...initialData
@@ -144,7 +142,6 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
         age_group: data.age_group,
         product_type: data.product_type,
         gender: data.gender,
-        collection: data.collection,
         gift_category: data.gift_category,
         is_gift_idea: data.is_gift_idea,
         is_draft: false, // false means the product is active/published
@@ -356,43 +353,6 @@ export function ProductUploadForm({ onSuccess, initialData, productId }: Product
                 </div>
               </div>
 
-              <div>
-                <Label>Collections</Label>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Select all collections this product belongs to (optional)
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    'Garden Party',
-                    'Modern Vintage',
-                    'Rainbow Bright',
-                    'Coastal Dreams',
-                    'Spring Awakening',
-                    'Summer Adventures',
-                    'Coordinating Siblings',
-                    'First Wardrobe',
-                    'Special Occasions',
-                    'Eco-Conscious'
-                  ].map((collection) => (
-                    <label key={collection} className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        value={collection}
-                        checked={watchedValues.collection?.includes(collection)}
-                        onChange={(e) => {
-                          const current = watchedValues.collection?.split(',').filter(Boolean) || []
-                          const updated = e.target.checked
-                            ? [...current, collection]
-                            : current.filter(c => c !== collection)
-                          setValue('collection', updated.join(','))
-                        }}
-                        className="rounded border-gray-300"
-                      />
-                      <span className="text-sm">{collection}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
 
               <div className="mt-6">
                 <Label>Gift Ideas</Label>

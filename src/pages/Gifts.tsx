@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/contexts/CartContext";
 import { cn } from "@/lib/utils";
-import type { ProductWithImages } from "@/types";
+import type { Product } from "@/types";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
@@ -19,60 +19,106 @@ import heroImage from "@/assets/hero-image.jpg";
 const Gifts = () => {
   const navigate = useNavigate();
   const { items } = useCart();
-  const [products, setProducts] = useState<ProductWithImages[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedPriceRange, setSelectedPriceRange] = useState('0-50')
+  const [selectedPriceRange, setSelectedPriceRange] = useState('under-50')
+  const [visibleCount, setVisibleCount] = useState(4)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [availableOccasions, setAvailableOccasions] = useState([])
+  const [categoryImages, setCategoryImages] = useState({})
 
   useEffect(() => {
     fetchProductsByPriceRange()
+    setVisibleCount(4) // Reset visible count when price range changes
   }, [selectedPriceRange])
+
+  useEffect(() => {
+    fetchAvailableOccasions()
+  }, [])
+
+  const fetchAvailableOccasions = async () => {
+    try {
+      // Check which gift categories have products in stock
+      const { data, error } = await supabase
+        .from('products')
+        .select('gift_category')
+        .gt('stock', 0)
+        .not('gift_category', 'is', null)
+
+      console.log('Gift category query result:', { data, error })
+
+      if (error) {
+        console.error('Error fetching gift categories:', error)
+        return
+      }
+
+      // Get unique gift categories that have products in stock
+      const uniqueCategories = [...new Set(data?.map(p => p.gift_category).filter(Boolean))] || []
+      console.log('Available gift categories:', uniqueCategories)
+      setAvailableOccasions(uniqueCategories)
+
+      // Fetch the most recent product image for each category
+      const imageMap = {}
+      for (const category of uniqueCategories) {
+        try {
+          const { data: recentProduct } = await supabase
+            .from('products')
+            .select('image_url')
+            .gt('stock', 0)
+            .ilike('gift_category', `%${category}%`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+
+          if (recentProduct && recentProduct.length > 0 && recentProduct[0].image_url) {
+            imageMap[category] = recentProduct[0].image_url
+          }
+        } catch (imageError) {
+          console.error(`Error fetching image for category ${category}:`, imageError)
+        }
+      }
+
+      console.log('Category images:', imageMap)
+      setCategoryImages(imageMap)
+    } catch (error) {
+      console.error('Error fetching available occasions:', error)
+    }
+  }
 
   const fetchProductsByPriceRange = async () => {
     try {
       setIsLoading(true)
 
-      // First, let's get all products to see what we're working with
+      // First, let's get all products without joins to see basic structure
       const { data: allData, error: allError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_images (*)
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(5)
 
       console.log('All products sample:', allData)
       console.log('All products error:', allError)
 
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          product_images (*)
-        `)
-
-      // Only filter by is_sold if the field exists and is true
-      if (allData && allData.length > 0) {
-        const hasIsSold = 'is_sold' in allData[0]
-        const hasIsDraft = 'is_draft' in allData[0]
-
-        if (hasIsSold) {
-          query = query.neq('is_sold', true)
-        }
-        if (hasIsDraft) {
-          query = query.neq('is_draft', true)
-        }
+      if (allError) {
+        console.error('Basic query failed:', allError)
+        setProducts([])
+        return
       }
 
+      // Build query with stock filtering
+      let query = supabase
+        .from('products')
+        .select('*')
+        .gt('stock', 0)
+
+      console.log('Sample product fields:', Object.keys(allData[0] || {}))
+
       // Apply price filtering based on selected range
-      if (selectedPriceRange === '0-50') {
+      if (selectedPriceRange === 'under-50') {
         query = query.lt('price', 50)
-      } else if (selectedPriceRange === '50-100') {
-        query = query.gte('price', 50).lt('price', 100)
-      } else if (selectedPriceRange === '100-150') {
-        query = query.gte('price', 100).lt('price', 150)
-      } else if (selectedPriceRange === '150-999') {
-        query = query.gte('price', 150)
+      } else if (selectedPriceRange === '50-75') {
+        query = query.gte('price', 50).lt('price', 75)
+      } else if (selectedPriceRange === '75-plus') {
+        query = query.gte('price', 75)
       }
 
       const { data, error } = await query.order('created_at', { ascending: false })
@@ -94,24 +140,36 @@ const Gifts = () => {
     }
   }
 
+  const handleLoadMore = () => {
+    setLoadingMore(true)
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+      setVisibleCount(prev => prev + 4)
+      setLoadingMore(false)
+    }, 500)
+  }
+
+  const visibleProducts = products.slice(0, visibleCount)
+  const hasMoreProducts = products.length > visibleCount
+
   const getPriceRangeDescription = () => {
     switch (selectedPriceRange) {
-      case '0-50':
+      case 'under-50':
         return 'Sweet accessories and small pieces'
-      case '50-100':
+      case '50-75':
         return 'Individual statement pieces'
-      case '100-150':
-        return 'Premium pieces or small sets'
-      case '150-999':
-        return 'Complete sets and exclusive designs'
+      case '75-plus':
+        return 'Premium pieces and exclusive designs'
       default:
         return 'Sweet accessories and small pieces'
     }
   }
 
-  const occasions = [
+  // Define all possible occasions
+  const allOccasions = [
     {
       name: "New Baby",
+      gift_category: "New Baby",
       description: "Hospital-perfect first outfits",
       image: productRomper,
       priceRange: "$65-120",
@@ -119,6 +177,7 @@ const Gifts = () => {
     },
     {
       name: "First Birthday",
+      gift_category: "First Birthday",
       description: "Special occasion wear",
       image: productDress,
       priceRange: "$75-150",
@@ -126,6 +185,7 @@ const Gifts = () => {
     },
     {
       name: "Christmas",
+      gift_category: "Christmas",
       description: "Festive and photo-worthy",
       image: productPants,
       priceRange: "$80-180",
@@ -133,6 +193,7 @@ const Gifts = () => {
     },
     {
       name: "Easter",
+      gift_category: "Easter",
       description: "Spring designs",
       image: heroImage,
       priceRange: "$70-140",
@@ -140,6 +201,7 @@ const Gifts = () => {
     },
     {
       name: "Starting School",
+      gift_category: "Starting School",
       description: "Confidence-building pieces",
       image: productRomper,
       priceRange: "$85-160",
@@ -147,12 +209,32 @@ const Gifts = () => {
     },
     {
       name: "Big Sibling",
+      gift_category: "Big Sibling",
       description: "Celebrating new roles",
       image: productPants,
       priceRange: "$90-170",
       route: "/gifts/big-sibling"
     }
   ];
+
+  // Filter occasions to only show those with available products and add real images
+  const occasions = allOccasions.filter(occasion =>
+    availableOccasions.some(category =>
+      category.toLowerCase().includes(occasion.gift_category.toLowerCase()) ||
+      occasion.gift_category.toLowerCase().includes(category.toLowerCase())
+    )
+  ).map(occasion => {
+    // Find the matching category image
+    const matchingCategory = availableOccasions.find(category =>
+      category.toLowerCase().includes(occasion.gift_category.toLowerCase()) ||
+      occasion.gift_category.toLowerCase().includes(category.toLowerCase())
+    )
+
+    return {
+      ...occasion,
+      image: categoryImages[matchingCategory] || occasion.image // Use real image or fallback to placeholder
+    }
+  });
 
 
   const priceRanges = [
@@ -234,8 +316,7 @@ const Gifts = () => {
                 <div className="p-6">
                   <h3 className="font-playfair text-xl font-bold text-foreground mb-2">{occasion.name}</h3>
                   <p className="font-inter text-muted-foreground mb-3">{occasion.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-inter text-sm text-primary font-semibold">{occasion.priceRange}</span>
+                  <div className="flex items-center justify-end">
                     <Button variant="outline" size="sm">Shop Now</Button>
                   </div>
                 </div>
@@ -256,10 +337,9 @@ const Gifts = () => {
           <div className="flex justify-center mb-6">
             <div className="bg-muted rounded-full p-1 inline-flex max-w-2xl w-full">
               {[
-                { id: '0-50', label: 'Under $50' },
-                { id: '50-100', label: '$50-$100' },
-                { id: '100-150', label: '$100-$150' },
-                { id: '150-999', label: '$150+' }
+                { id: 'under-50', label: 'Under $50' },
+                { id: '50-75', label: '$50-$75' },
+                { id: '75-plus', label: '$75+' }
               ].map((range) => (
                 <button
                   key={range.id}
@@ -300,27 +380,45 @@ const Gifts = () => {
               <p className="text-gray-600 mb-6">
                 Try selecting a different price range to see more options.
               </p>
-              <Button variant="outline" onClick={() => setSelectedPriceRange('0-50')}>
+              <Button variant="outline" onClick={() => setSelectedPriceRange('under-50')}>
                 View Under $50
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={{
-                    ...product,
-                    badge: product.is_sold ? 'Sold Out' : undefined,
-                    description: `Perfect for ${product.age_group || 'all ages'}`,
-                    // Add compatibility fields for the ProductCard component
-                    image_url: product.product_images?.find(img => img.is_primary)?.url || product.product_images?.[0]?.url,
-                    stock: product.is_sold ? 0 : 1, // Simplified stock logic
-                    is_active: !product.is_sold && !product.is_draft
-                  }}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {visibleProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      ...product,
+                      badge: product.stock === 0 ? 'Sold Out' : undefined,
+                      description: product.description || `Perfect for ${product.age_group || 'all ages'}`,
+                      // Images are stored directly in image_url field
+                      image_url: product.image_url,
+                      stock: product.stock || 0,
+                      is_active: product.stock > 0,
+                      in_stock: product.stock > 0
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {hasMoreProducts && (
+                <div className="text-center mt-8">
+                  <Button
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    variant="outline"
+                    size="lg"
+                    className="px-8 py-3"
+                  >
+                    {loadingMore ? 'Loading...' : `Load More (${products.length - visibleCount} remaining)`}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

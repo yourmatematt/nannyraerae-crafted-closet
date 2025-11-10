@@ -166,11 +166,9 @@ export default function ProductDetail() {
           <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Product not found</h2>
           <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
-          <Button asChild>
-            <Link to="/new-arrivals" state={{ preserveScroll: true }}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Shop
-            </Link>
+          <Button onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Shop
           </Button>
         </div>
       </div>
@@ -190,11 +188,12 @@ export default function ProductDetail() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
           <div className="mb-6">
-            <Button asChild variant="ghost">
-              <Link to="/new-arrivals" state={{ preserveScroll: true }}>
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Products
-              </Link>
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Products
             </Button>
           </div>
 

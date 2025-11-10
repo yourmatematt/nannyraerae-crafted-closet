@@ -1,70 +1,113 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
 
 const ShopByAgeOverview = () => {
+  const [ageGroupImages, setAgeGroupImages] = useState({});
+
+  useEffect(() => {
+    fetchAgeGroupImages();
+  }, []);
+
+  const fetchAgeGroupImages = async () => {
+    try {
+      const ageGroups = ['3mths', '6mths', '9mths', '1yr', '2yrs', '3yrs', '4yrs', '5yrs'];
+      const imageMap = {};
+
+      for (const age of ageGroups) {
+        try {
+          const { data: recentProduct } = await supabase
+            .from('products')
+            .select('image_url')
+            .gt('stock', 0)
+            .eq('age_group', age)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (recentProduct && recentProduct.length > 0 && recentProduct[0].image_url) {
+            imageMap[age] = recentProduct[0].image_url;
+          }
+        } catch (imageError) {
+          console.error(`Error fetching image for age group ${age}:`, imageError);
+        }
+      }
+
+      console.log('Age group images:', imageMap);
+      setAgeGroupImages(imageMap);
+    } catch (error) {
+      console.error('Error fetching age group images:', error);
+    }
+  };
   const sizeRanges = [
     {
       title: "3 Months",
       subtitle: "Perfect for precious little ones",
       ageGroup: "3mths",
-      image: productDress,
+      placeholderImage: productDress,
       description: "Soft, gentle fabrics for baby's delicate skin"
     },
     {
       title: "6 Months",
       subtitle: "Growing and exploring in comfort",
       ageGroup: "6mths",
-      image: productRomper,
+      placeholderImage: productRomper,
       description: "Durable designs for active babies"
     },
     {
       title: "9 Months",
       subtitle: "Mobile babies need comfortable clothes",
       ageGroup: "9mths",
-      image: productPants,
+      placeholderImage: productPants,
       description: "Crawling-friendly designs that stay in place"
     },
     {
       title: "1 Year",
       subtitle: "Perfect for little adventurers",
       ageGroup: "1yr",
-      image: productDress,
+      placeholderImage: productDress,
       description: "Easy-dress designs for active toddlers"
     },
     {
       title: "2 Years",
       subtitle: "For confident little walkers",
       ageGroup: "2yrs",
-      image: productRomper,
+      placeholderImage: productRomper,
       description: "Durable designs for playground adventures"
     },
     {
       title: "3 Years",
       subtitle: "Ready for preschool and play",
       ageGroup: "3yrs",
-      image: productPants,
+      placeholderImage: productPants,
       description: "Comfortable styles for all-day wear"
     },
     {
       title: "4 Years",
       subtitle: "Independent dressers need practical styles",
       ageGroup: "4yrs",
-      image: productDress,
+      placeholderImage: productDress,
       description: "Self-dressing friendly designs"
     },
     {
       title: "5 Years",
       subtitle: "Stylish pieces for confident kids",
       ageGroup: "5yrs",
-      image: productRomper,
+      placeholderImage: productRomper,
       description: "Fashion-forward designs kids love to wear"
     }
   ];
+
+  // Add real images to size ranges
+  const sizeRangesWithImages = sizeRanges.map(range => ({
+    ...range,
+    image: ageGroupImages[range.ageGroup] || range.placeholderImage
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,10 +130,10 @@ const ShopByAgeOverview = () => {
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {sizeRanges.map((range, index) => (
+            {sizeRangesWithImages.map((range, index) => (
               <Link
                 key={index}
-                to={`/shop/age/${range.ageGroup}`}
+                to={`/collection?age=${range.ageGroup}`}
                 className="block group"
               >
                 <div className="bg-accent rounded-2xl overflow-hidden min-h-[400px] group hover:scale-105 transition-transform duration-300 shadow-medium hover:shadow-large relative">
