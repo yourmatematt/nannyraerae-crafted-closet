@@ -1,54 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import type { Product } from "@/types";
-import productDress from "@/assets/product-dress.jpg";
-import productRomper from "@/assets/product-romper.jpg";
-import productPants from "@/assets/product-pants.jpg";
 
 const FeaturedCollections = () => {
-  const [newestProduct, setNewestProduct] = useState<Product | null>(null)
-  const [giftProduct, setGiftProduct] = useState<Product | null>(null)
-
-  useEffect(() => {
-    fetchFeaturedData()
-  }, [])
-
-  const fetchFeaturedData = async () => {
-    try {
-      // Get newest product from last 7 days
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-
-      const { data: newProducts } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .gte('created_at', weekAgo.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1)
-
-      if (newProducts && newProducts.length > 0) {
-        setNewestProduct(newProducts[0])
-      }
-
-      // Get a gift idea product
-      const { data: giftProducts } = await supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .eq('is_gift_idea', true)
-        .limit(1)
-
-      if (giftProducts && giftProducts.length > 0) {
-        setGiftProduct(giftProducts[0])
-      }
-    } catch (error) {
-      console.error('Error fetching featured data:', error)
-    }
-  }
-
   const collections = [
     {
       title: "New This Week",
@@ -57,7 +10,7 @@ const FeaturedCollections = () => {
       textColor: "text-white",
       hoverTextColor: "text-pink-800",
       link: "/new-arrivals",
-      image: newestProduct?.image_url || productDress,
+      image: "https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/new-this-week.jpg",
     },
     {
       title: "Shop by Age",
@@ -66,7 +19,7 @@ const FeaturedCollections = () => {
       textColor: "text-white",
       hoverTextColor: "text-slate-800",
       link: "/shop-by-age",
-      image: productPants,
+      image: "https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/shop-by-age.jpg",
     },
     {
       title: "Gift Ready",
@@ -75,7 +28,7 @@ const FeaturedCollections = () => {
       textColor: "text-white",
       hoverTextColor: "text-orange-800",
       link: "/gifts",
-      image: giftProduct?.image_url || productRomper,
+      image: "https://kqshrevhtrusxrwkgdmd.supabase.co/storage/v1/object/public/brand-assets/about-rae/gift-ready.jpg",
     },
   ];
 
@@ -83,10 +36,10 @@ const FeaturedCollections = () => {
     <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="text-center mb-12">
         <h2 className="font-playfair text-3xl lg:text-4xl font-bold mb-4" style={{ color: '#8E5A3B' }}>
-          Discover Our Collections
+          Discover Our Collection
         </h2>
         <p className="font-inter text-lg text-muted-foreground max-w-2xl mx-auto">
-          Each collection tells a unique story, crafted with love and attention to detail
+          The collection tells a unique story, crafted with love and attention to detail
         </p>
       </div>
 

@@ -10,32 +10,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase";
 import { useCart } from "@/contexts/CartContext";
 import { cn } from "@/lib/utils";
+import type { ProductWithImages } from "@/types";
 import productDress from "@/assets/product-dress.jpg";
 import productRomper from "@/assets/product-romper.jpg";
 import productPants from "@/assets/product-pants.jpg";
 import heroImage from "@/assets/hero-image.jpg";
 
-interface Product {
-  id: number
-  name: string
-  price: number
-  image_url?: string
-  age_group?: string
-  is_gift_idea?: boolean
-  collection?: string
-  gender?: string
-  product_type?: string
-  gift_category?: string
-  description?: string
-  stock: number
-  is_active: boolean
-  created_at: string
-}
-
 const Gifts = () => {
   const navigate = useNavigate();
   const { items } = useCart();
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<ProductWithImages[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedPriceRange, setSelectedPriceRange] = useState('0-50')
 
@@ -47,105 +31,61 @@ const Gifts = () => {
     try {
       setIsLoading(true)
 
-      // Create comprehensive mock data for all price ranges
-      const allMockProducts = [
-        {
-          id: 1, name: 'Garden Party Dress', price: 45, image_url: null,
-          age_group: '1yr', is_gift_idea: true, stock: 5, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2, name: 'Special Romper', price: 75, image_url: null,
-          age_group: '6mths', is_gift_idea: true, stock: 3, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 3, name: 'Luxury Gift Set', price: 120, image_url: null,
-          age_group: '2yrs', is_gift_idea: true, stock: 2, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 4, name: 'Premium Outfit', price: 180, image_url: null,
-          age_group: '3yrs', is_gift_idea: true, stock: 1, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 5, name: 'Sweet Hair Bow', price: 25, image_url: null,
-          age_group: '1yr', is_gift_idea: true, stock: 10, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 6, name: 'Deluxe Gift Bundle', price: 200, image_url: null,
-          age_group: '4yrs', is_gift_idea: true, stock: 1, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 7, name: 'Cute Hair Clip', price: 15, image_url: null,
-          age_group: '2yrs', is_gift_idea: true, stock: 8, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 8, name: 'Play Set Outfit', price: 85, image_url: null,
-          age_group: '3yrs', is_gift_idea: true, stock: 4, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 9, name: 'Designer Dress', price: 135, image_url: null,
-          age_group: '1yr', is_gift_idea: true, stock: 2, is_active: true,
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 10, name: 'Luxury Collection Set', price: 250, image_url: null,
-          age_group: '4yrs', is_gift_idea: true, stock: 1, is_active: true,
-          created_at: new Date().toISOString()
+      // First, let's get all products to see what we're working with
+      const { data: allData, error: allError } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_images (*)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      console.log('All products sample:', allData)
+      console.log('All products error:', allError)
+
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          product_images (*)
+        `)
+
+      // Only filter by is_sold if the field exists and is true
+      if (allData && allData.length > 0) {
+        const hasIsSold = 'is_sold' in allData[0]
+        const hasIsDraft = 'is_draft' in allData[0]
+
+        if (hasIsSold) {
+          query = query.neq('is_sold', true)
         }
-      ]
-
-      // Try to fetch from Supabase first
-      let products = []
-      try {
-        let query = supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .eq('is_gift_idea', true)
-          .gt('stock', 0)
-
-        // Apply price filtering based on selected range
-        if (selectedPriceRange === '0-50') {
-          query = query.lt('price', 50)
-        } else if (selectedPriceRange === '50-100') {
-          query = query.gte('price', 50).lt('price', 100)
-        } else if (selectedPriceRange === '100-150') {
-          query = query.gte('price', 100).lt('price', 150)
-        } else if (selectedPriceRange === '150-999') {
-          query = query.gte('price', 150)
-        }
-
-        query = query.order('created_at', { ascending: false })
-        const { data, error } = await query
-
-        if (!error && data && data.length > 0) {
-          products = data
-        }
-      } catch (dbError) {
-        console.log('Database query failed, using mock data')
-      }
-
-      // If no products from database, use filtered mock data
-      if (products.length === 0) {
-        if (selectedPriceRange === '0-50') {
-          products = allMockProducts.filter(p => p.price < 50)
-        } else if (selectedPriceRange === '50-100') {
-          products = allMockProducts.filter(p => p.price >= 50 && p.price < 100)
-        } else if (selectedPriceRange === '100-150') {
-          products = allMockProducts.filter(p => p.price >= 100 && p.price < 150)
-        } else if (selectedPriceRange === '150-999') {
-          products = allMockProducts.filter(p => p.price >= 150)
+        if (hasIsDraft) {
+          query = query.neq('is_draft', true)
         }
       }
 
-      setProducts(products)
+      // Apply price filtering based on selected range
+      if (selectedPriceRange === '0-50') {
+        query = query.lt('price', 50)
+      } else if (selectedPriceRange === '50-100') {
+        query = query.gte('price', 50).lt('price', 100)
+      } else if (selectedPriceRange === '100-150') {
+        query = query.gte('price', 100).lt('price', 150)
+      } else if (selectedPriceRange === '150-999') {
+        query = query.gte('price', 150)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      console.log(`Products for range ${selectedPriceRange}:`, data)
+      console.log('Query error:', error)
+
+      if (error) {
+        console.error('Database query error:', error)
+        setProducts([])
+      } else {
+        setProducts(data || [])
+      }
     } catch (error) {
       console.error('Error in fetchProductsByPriceRange:', error)
       setProducts([])
@@ -371,8 +311,12 @@ const Gifts = () => {
                   key={product.id}
                   product={{
                     ...product,
-                    badge: product.stock > 0 ? undefined : 'Sold Out',
-                    description: `Perfect for ${product.age_group || 'all ages'}`
+                    badge: product.is_sold ? 'Sold Out' : undefined,
+                    description: `Perfect for ${product.age_group || 'all ages'}`,
+                    // Add compatibility fields for the ProductCard component
+                    image_url: product.product_images?.find(img => img.is_primary)?.url || product.product_images?.[0]?.url,
+                    stock: product.is_sold ? 0 : 1, // Simplified stock logic
+                    is_active: !product.is_sold && !product.is_draft
                   }}
                 />
               ))}
