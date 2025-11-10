@@ -5,23 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import productDress from "@/assets/product-dress.jpg";
-import productRomper from "@/assets/product-romper.jpg";
-import productPants from "@/assets/product-pants.jpg";
-import heroImage from "@/assets/hero-image.jpg";
+import type { Product } from "@/types";
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image_url?: string;
-  created_at: string;
-  badge?: string;
-  stock_quantity?: number;
-  in_stock?: boolean;
-  age_group?: string;
-  gift_category?: string;
-}
 
 // Memoized filter section to prevent unnecessary re-renders
 const FilterSection = memo(({
@@ -106,90 +91,12 @@ const Christmas = () => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['christmasGifts', selectedAgeGroup, selectedPriceRange],
     queryFn: async () => {
-      // Create mock data for Christmas gifts
-      const mockProducts = [
-        {
-          id: 1,
-          name: "Holiday Festival Dress",
-          price: 95,
-          image_url: null,
-          created_at: new Date().toISOString(),
-          badge: "Holiday Special",
-          stock_quantity: 4,
-          in_stock: true,
-          age_group: "1yr",
-          gift_category: "Christmas"
-        },
-        {
-          id: 2,
-          name: "Christmas Morning Romper",
-          price: 75,
-          image_url: null,
-          created_at: new Date().toISOString(),
-          badge: "Festive",
-          stock_quantity: 6,
-          in_stock: true,
-          age_group: "6mths",
-          gift_category: "Christmas"
-        },
-        {
-          id: 3,
-          name: "Winter Wonderland Set",
-          price: 145,
-          image_url: null,
-          created_at: new Date().toISOString(),
-          badge: "Photo Ready",
-          stock_quantity: 2,
-          in_stock: true,
-          age_group: "4yrs",
-          gift_category: "Christmas"
-        },
-        {
-          id: 4,
-          name: "Holiday Party Pants",
-          price: 65,
-          image_url: null,
-          created_at: new Date().toISOString(),
-          badge: "Velvet",
-          stock_quantity: 5,
-          in_stock: true,
-          age_group: "2yrs",
-          gift_category: "Christmas"
-        },
-        {
-          id: 5,
-          name: "Santa's Helper Outfit",
-          price: 85,
-          image_url: null,
-          created_at: new Date().toISOString(),
-          badge: "Adorable",
-          stock_quantity: 3,
-          in_stock: true,
-          age_group: "9mths",
-          gift_category: "Christmas"
-        },
-        {
-          id: 6,
-          name: "Christmas Eve Collection",
-          price: 180,
-          image_url: null,
-          created_at: new Date().toISOString(),
-          badge: "Luxury",
-          stock_quantity: 1,
-          in_stock: true,
-          age_group: "3yrs",
-          gift_category: "Christmas"
-        }
-      ];
-
-      // Try Supabase query first
       try {
         let query = supabase
           .from('products')
           .select('*')
-          .eq('is_active', true)
-          .eq('is_gift_idea', true)
-          .eq('gift_category', 'Christmas')
+          .gt('stock', 0)
+          .ilike('gift_category', '%Christmas%')
           .order('created_at', { ascending: false });
 
         // Apply age group filter
@@ -210,31 +117,16 @@ const Christmas = () => {
 
         const { data, error } = await query;
 
-        if (!error && data && data.length > 0) {
-          return data as Product[];
+        if (error) {
+          console.error('Error fetching Christmas products:', error);
+          return [];
         }
+
+        return data || [];
       } catch (error) {
         console.error('Error fetching products:', error);
+        return [];
       }
-
-      // Filter mock data
-      let filteredProducts = mockProducts;
-
-      if (selectedAgeGroup !== 'all') {
-        filteredProducts = filteredProducts.filter(p => p.age_group === selectedAgeGroup);
-      }
-
-      if (selectedPriceRange === 'under50') {
-        filteredProducts = filteredProducts.filter(p => p.price < 50);
-      } else if (selectedPriceRange === '50-100') {
-        filteredProducts = filteredProducts.filter(p => p.price >= 50 && p.price < 100);
-      } else if (selectedPriceRange === '100-150') {
-        filteredProducts = filteredProducts.filter(p => p.price >= 100 && p.price < 150);
-      } else if (selectedPriceRange === '150plus') {
-        filteredProducts = filteredProducts.filter(p => p.price >= 150);
-      }
-
-      return filteredProducts;
     }
   });
 
@@ -267,7 +159,12 @@ const Christmas = () => {
                 key={product.id}
                 product={{
                   ...product,
-                  badge: product.badge || undefined
+                  badge: product.stock === 0 ? 'Sold Out' : undefined,
+                  description: product.description || `Perfect for ${product.age_group || 'all ages'}`,
+                  image_url: product.image_url,
+                  stock: product.stock || 0,
+                  is_active: product.stock > 0,
+                  in_stock: product.stock > 0
                 }}
               />
             ))}

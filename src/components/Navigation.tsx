@@ -11,6 +11,7 @@ const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isShopByAgeOpen, setIsShopByAgeOpen] = useState(false);
   const navigate = useNavigate();
   const { itemCount } = useCart();
   const { user } = useAuth();
@@ -225,63 +226,73 @@ const Navigation = () => {
                   New Arrivals
                 </Button>
                 <div className="flex flex-col">
-                  <span className="px-4 py-2 text-sm font-medium text-foreground border-b border-border mb-2">Shop By Size</span>
-                  <Link
-                    to="/new-arrivals?size=3mths"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
+                  <Button
+                    variant="ghost"
+                    className="justify-start font-inter font-medium text-foreground flex items-center gap-1"
+                    onClick={() => setIsShopByAgeOpen(!isShopByAgeOpen)}
                   >
-                    3 Months
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=6mths"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    6 Months
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=9mths"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    9 Months
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=1yr"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    1 Year
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=2yrs"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    2 Years
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=3yrs"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    3 Years
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=4yrs"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    4 Years
-                  </Link>
-                  <Link
-                    to="/new-arrivals?size=5yrs"
-                    className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    5 Years
-                  </Link>
+                    Shop By Age <ChevronDown className={cn("h-4 w-4 transition-transform", isShopByAgeOpen && "rotate-180")} />
+                  </Button>
+                  {isShopByAgeOpen && (
+                    <div className="pl-4 flex flex-col space-y-1">
+                      <Link
+                        to="/collection?size=3mths"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        3 Months
+                      </Link>
+                      <Link
+                        to="/collection?size=6mths"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        6 Months
+                      </Link>
+                      <Link
+                        to="/collection?size=9mths"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        9 Months
+                      </Link>
+                      <Link
+                        to="/collection?size=1yr"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        1 Year
+                      </Link>
+                      <Link
+                        to="/collection?size=2yrs"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        2 Years
+                      </Link>
+                      <Link
+                        to="/collection?size=3yrs"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        3 Years
+                      </Link>
+                      <Link
+                        to="/collection?size=4yrs"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        4 Years
+                      </Link>
+                      <Link
+                        to="/collection?size=5yrs"
+                        className="px-4 py-1 text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        5 Years
+                      </Link>
+                    </div>
+                  )}
                 </div>
                 <Button
                   variant="ghost"
