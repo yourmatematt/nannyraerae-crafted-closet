@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Search, Package, Eye, CheckCircle, MessageCircle, Users, MapPin, ShoppingBag, Truck } from 'lucide-react'
 import { toast } from 'sonner'
+import { AddressLabel } from '@/components/admin/AddressLabel'
 
 // Order status constants
 const ORDER_STATUSES = {
@@ -585,6 +586,8 @@ export default function Orders() {
                             Track
                           </Button>
                         )}
+
+                        <AddressLabel order={order} />
                       </div>
                     </TableCell>
                   </TableRow>
