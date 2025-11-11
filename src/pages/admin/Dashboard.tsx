@@ -508,16 +508,6 @@ export function AdminDashboard() {
                       {formErrors.product_type && <p className="text-sm text-red-500 mt-1">{formErrors.product_type}</p>}
                     </div>
 
-                    <div className="col-span-2">
-                      <Label htmlFor="collection">Collection (Optional)</Label>
-                      <Input
-                        id="collection"
-                        type="text"
-                        placeholder="e.g., Garden Party, Modern Vintage"
-                        value={formData.collection}
-                        onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
-                      />
-                    </div>
 
                     <div>
                       <div className="flex items-center space-x-2 mb-3">
@@ -888,16 +878,6 @@ export function AdminDashboard() {
                 {formErrors.product_type && <p className="text-sm text-red-500 mt-1">{formErrors.product_type}</p>}
               </div>
 
-              <div className="col-span-2">
-                <Label htmlFor="edit-collection">Collection (Optional)</Label>
-                <Input
-                  id="edit-collection"
-                  type="text"
-                  placeholder="e.g., Garden Party, Modern Vintage"
-                  value={formData.collection}
-                  onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
-                />
-              </div>
 
               <div>
                 <div className="flex items-center space-x-2 mb-3">
