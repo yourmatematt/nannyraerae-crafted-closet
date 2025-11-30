@@ -235,7 +235,15 @@ const Footer = () => {
           <div className="border-t border-white/10 py-8">
             <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
               <p className="font-inter text-white/80 text-center lg:text-left">
-                © 2024 Handmade by Nanny Rae Rae&apos;s. All rights reserved.
+                © 2024 Handmade by Nanny Rae Rae&apos;s. All rights reserved. •{" "}
+                <a
+                  href="https://yourmateagency.com.au"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  Built by Your Mate Agency
+                </a>
               </p>
 
               <div className="flex items-center gap-6 text-white/70 text-sm font-inter">

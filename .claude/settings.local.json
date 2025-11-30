@@ -22,7 +22,9 @@
       "Bash(supabase db:*)",
       "Bash(supabase secrets:*)",
       "Bash(supabase functions logs:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
