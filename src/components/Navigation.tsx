@@ -297,7 +297,7 @@ const Navigation = () => {
                 <Button
                   variant="ghost"
                   className="justify-start font-inter font-medium text-foreground"
-                  onClick={() => { navigate('/collections'); setIsMenuOpen(false); }}
+                  onClick={() => { navigate('/collection'); setIsMenuOpen(false); }}
                 >
                   Collection
                 </Button>

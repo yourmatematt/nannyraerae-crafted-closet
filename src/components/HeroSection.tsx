@@ -38,7 +38,7 @@ const HeroSection = () => {
                 <Button
                   size="lg"
                   className="bg-primary text-primary-foreground hover:bg-primary/90 font-inter font-semibold px-8 py-4 text-lg rounded-full"
-                  onClick={() => navigate('/new-arrivals')}
+                  onClick={() => navigate('/collection')}
                 >
                   Shop Collection
                 </Button>
