@@ -10,9 +10,13 @@ Add these environment variables to your Vercel deployment or local `.env` file:
 # Brevo API Configuration
 BREVO_API_KEY=your_brevo_api_key_here
 BREVO_SHIPPING_TEMPLATE_ID=2
-BREVO_FROM_EMAIL=noreply@nannyraerae.com
+BREVO_FROM_EMAIL=orders@nannyraerae.com.au
 BREVO_FROM_NAME=Nanny Rae Rae
 ```
+
+These live as **Supabase Edge Function secrets** in production, not in the frontend `.env.local`.
+Set them with `supabase secrets set BREVO_API_KEY=...`. Note that Supabase secrets can't be edited
+in place — to change one, delete it and recreate it.
 
 ## How to Get These Values
 
@@ -66,6 +70,23 @@ supabase functions deploy send-shipping-email
 2. Use the "Ship Order" button to enter a tracking number
 3. Check the Supabase function logs for any errors
 4. Verify the email is received by the customer
+
+## Gotchas that have actually bitten this project
+
+**Brevo blocks Supabase edge function IPs by default.** If emails silently do nothing — no error,
+no delivery — this is almost always why. Brevo has an IP allowlist under Settings > Security >
+Authorised IPs. Either whitelist the Supabase function IPs or turn the restriction off. Nothing in
+the logs tells you this is the problem.
+
+**`templateId` must parse as an integer.** Both email functions do
+`parseInt(Deno.env.get('BREVO_..._TEMPLATE_ID'))` (`send-shipping-email/index.ts:81`,
+`send-order-confirmation/index.ts:81`). If the value isn't numeric, `parseInt` returns `NaN`, Brevo
+falls back to non-template mode, and you get a **"subject is required"** error that has nothing to
+do with the real cause. Use `2`, never `template_2`.
+
+**Env var names must match exactly across functions.** `BREVO_FROM_EMAIL` vs `BREVO_SENDER_EMAIL`
+has caused a silent failure here before. Check the actual `Deno.env.get()` call in the function
+before setting a secret.
 
 ## Troubleshooting
 

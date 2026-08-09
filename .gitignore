@@ -10,7 +10,12 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# Secrets. `*.local` covers .env.local — do not remove it.
 *.local
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +28,17 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Supabase CLI local state
+supabase/.temp
+
+# Local AI tool config
+.claude/settings.local.json
+CLAUDE.md
+**/CLAUDE.md
+
+# Internal working files — not part of the codebase
+prompt.md
+SEO-AUDIT-REPORT.md
+*.pdf
+docs/blogs/
